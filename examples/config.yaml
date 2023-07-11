@@ -1,0 +1,46 @@
+scope:
+  domain:
+    - example.com
+  ip:
+    - 192.0.2.1
+    - 192.0.2.2
+    - 192.168.0.3-8
+    - 192.168.0.10-192.168.0.20
+  ASN:
+    - 1234
+    - 5678
+  CIDR:
+    - 192.0.2.0/24
+    - 192.0.2.128/25
+  ports:
+    - 80
+    - 443
+  blacklist:
+    - example1.com
+options:
+  resolvers: 
+    - "examples/resolvers.txt" # array of 1 path or multiple IPs to use as a resolver
+  datasources: "examples/datasources.yaml"
+  wordlist: # global wordlist(s) to uses 
+    - "examples/wordlists/deepmagic.com_top50kprefixes.txt"
+    - "examples/wordlists/deepmagic.com_top500prefixes.txt"
+  database: "postgres://username:password@localhost:5432/database?testing=works"
+  bruteforce:
+    enabled: true
+    wordlist:
+      - "examples/wordlists/subdomains-top1mil-5000.txt"
+  alterations:
+    enabled: true
+    wordlist:
+      - "examples/wordlists/subdomains-top1mil-110000.txt"
+assets:  # when we get a specific asset, we will perform a specific action on it
+  FQDN:
+    actions:  # action to perform on the item
+      - brute
+      - crawl
+    options:  # options that are specific to the action, for example maybe we want a different wordlist when brute forcing FQDNs
+      wordlist:
+        - "examples/wordlists/jhaddix_all.txt"
+  IP:
+    actions:
+      - cert_grab
