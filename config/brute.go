@@ -32,7 +32,7 @@ func (c *Config) loadBruteForceSettings(cfg *Config) error {
 		return nil
 	}
 
-	if wordlistPathRaw, ok := bruteforce["wordlist"]; ok {
+	if wordlistPathRaw, ok := bruteforce["wordlists"]; ok {
 		wordlistPaths, ok := wordlistPathRaw.([]interface{})
 		if !ok {
 			return fmt.Errorf("bruteforce wordlist_file is not an array")
@@ -79,7 +79,7 @@ func (c *Config) loadAlterationSettings(cfg *Config) error {
 		return nil
 	}
 
-	if wordlistPathRaw, ok := alterations["wordlist"]; ok {
+	if wordlistPathRaw, ok := alterations["wordlists"]; ok {
 		wordlistPaths, ok := wordlistPathRaw.([]interface{})
 		if !ok {
 			return fmt.Errorf("alterations wordlist_file is not an array")

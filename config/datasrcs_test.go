@@ -76,7 +76,8 @@ func TestGetCredentials(t *testing.T) {
 
 	dsc := c.DatasrcConfigs
 
-	if creds := dsc.GetCredentials(); creds == nil || creds.Username != "username" {
+	// Pass the name of the data source when calling GetCredentials
+	if creds := dsc.GetCredentials("test"); creds == nil || creds.Username != "username" {
 		t.Errorf("GetCredentials returned an error when provided a valid argument")
 	}
 }
@@ -113,7 +114,8 @@ global_options:
 		t.Errorf("Failed to load data source settings")
 	}
 
-	if creds := c.DatasrcConfigs.GetCredentials(); creds == nil || creds.Username != "avuser" {
+	// Pass the name of the data source when calling GetCredentials
+	if creds := c.DatasrcConfigs.GetCredentials("AlienVault"); creds == nil || creds.Username != "avuser" {
 		t.Errorf("Failed to load data source credentials")
 	}
 

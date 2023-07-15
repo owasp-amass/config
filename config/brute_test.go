@@ -27,7 +27,7 @@ func TestConfigLoadBruteForceSettings(t *testing.T) {
 options:
   brute_force:
     enabled: true
-    wordlist: []`)},
+    wordlists: []`)},
 			wantErr: false,
 			assertionFunc: func(t *testing.T, c *Config) {
 				bruteForce, ok := c.Options["brute_force"].(map[string]interface{})
@@ -39,7 +39,7 @@ options:
 				if !ok || !enabled {
 					t.Errorf("BruteForce not enabled")
 				}
-				wordlist, ok := bruteForce["wordlist"].([]interface{})
+				wordlist, ok := bruteForce["wordlists"].([]interface{})
 				if !ok || len(wordlist) != 0 {
 					t.Errorf("Wordlist not correctly set")
 				}
@@ -64,7 +64,7 @@ options:
 options:
   brute_force:
     enabled: false
-    wordlist: []`)},
+    wordlists: []`)},
 			wantErr: false,
 			assertionFunc: func(t *testing.T, c *Config) {
 				bruteForce, ok := c.Options["brute_force"].(map[string]interface{})
@@ -91,7 +91,7 @@ options:
 					t.Errorf("BruteForce not found")
 					return
 				}
-				_, ok = bruteForce["wordlist"].([]interface{})
+				_, ok = bruteForce["wordlists"].([]interface{})
 				if ok {
 					t.Errorf("Wordlist was found, but it is not in the YAML")
 				}
@@ -103,7 +103,7 @@ options:
 options:
   brute_force:
     enabled: true
-    wordlist: 
+    wordlists: 
       - "wordlist_file"`)},
 			wantErr: false,
 			assertionFunc: func(t *testing.T, c *Config) {
@@ -112,7 +112,7 @@ options:
 					t.Errorf("BruteForce not found")
 					return
 				}
-				wordlist, ok := bruteForce["wordlist"].([]interface{})
+				wordlist, ok := bruteForce["wordlists"].([]interface{})
 				if !ok || len(wordlist) != 1 {
 					t.Errorf("Wordlist not correctly set")
 				}
@@ -148,7 +148,7 @@ func TestConfigLoadAlterationSettings(t *testing.T) {
 options:
   name_alteration:
     enabled: false
-    wordlist: []
+    wordlists: []
             `)},
 			wantErr: false,
 			assertionFunc: func(t *testing.T, c *Config) {
@@ -169,7 +169,7 @@ options:
 options:
   name_alteration:
     enabled: true
-    wordlist: 
+    wordlists: 
       - "test_word"
             `)},
 			wantErr: false,
@@ -183,7 +183,7 @@ options:
 				if !ok || !enabled {
 					t.Errorf("NameAlteration not enabled")
 				}
-				wordlist, ok := nameAlteration["wordlist"].([]interface{})
+				wordlist, ok := nameAlteration["wordlists"].([]interface{})
 				if !ok || len(wordlist) != 1 {
 					t.Errorf("Wordlist not correctly set")
 				}
@@ -203,7 +203,7 @@ options:
 					t.Errorf("NameAlteration not found")
 					return
 				}
-				_, ok = nameAlteration["wordlist"].([]interface{})
+				_, ok = nameAlteration["wordlists"].([]interface{})
 				if ok {
 					t.Errorf("Wordlist was found, but not in YAML")
 				}
