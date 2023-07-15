@@ -6,7 +6,7 @@ package config
 
 import (
 	"fmt"
-	"net"
+	"path/filepath"
 	"reflect"
 	"sort"
 	"testing"
@@ -49,7 +49,7 @@ func TestAddDomains(t *testing.T) {
 		c.AddDomain(example)
 		want := true
 		got := false
-		for _, l := range c.Scope.ProvidedNames {
+		for _, l := range c.Scope.domains {
 			if example == l {
 				got = true
 			}
@@ -86,11 +86,18 @@ func TestAddDomains(t *testing.T) {
 
 func TestIsAddressInScope(t *testing.T) {
 	c := NewConfig()
+	var ipNet ParseIPs
+
+	// Example string to use to convert the appropriate data type and populate c.Scope.IP
 	example := "192.0.2.1"
-	c.Scope.Addresses = append(c.Scope.Addresses, net.ParseIP(example).String())
-	c.Scope.toIPs(c.Scope.Addresses)
+	fmt.Println()
+	_ = ipNet.parseRange(example)
+	c.Scope.Addresses = ipNet
+
+	c.Scope.IP = append(c.Scope.IP, string(c.Scope.Addresses[0]))
+	fmt.Println(c.Scope.Addresses)
 	if !c.IsAddressInScope(example) {
-		t.Errorf("Failed to find address %v in scope.\nAddress List:%v", example, c.Scope.ProvidedNames)
+		t.Errorf("Failed to find address %v in scope.\nAddress List:%v", example, c.Scope.Addresses)
 	}
 }
 
@@ -108,8 +115,14 @@ func TestBlacklist(t *testing.T) {
 
 func TestLoadSettings(t *testing.T) {
 	c := NewConfig()
-	path := "/home/adem/go/src/amass/examples/config.yaml"
-	err := c.LoadSettings(path)
+	relativepath := filepath.Join("..", "examples", "config.yaml")
+	path, err := filepath.Abs(relativepath)
+	if err != nil {
+		t.Errorf("Failed to get absolute path: %v", err)
+		return
+	}
+
+	err = c.LoadSettings(path)
 	if err != nil {
 		t.Errorf("Config file failed to load.")
 		fmt.Println(err)
@@ -164,7 +177,7 @@ func TestConfigCheckSettings(t *testing.T) {
 }
 
 func TestConfigGetListFromFile(t *testing.T) {
-	var list = "/home/adem/scripts_and_tools/SecLists/Discovery/DNS/shubs-subdomains.txt"
+	var list = "../examples/wordlists/subdomains-top1mil-110000.txt"
 	if _, err := GetListFromFile(list); err != nil {
 		t.Errorf("GetListFromFile() error = %v", err)
 	}

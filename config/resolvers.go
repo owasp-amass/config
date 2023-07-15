@@ -215,7 +215,13 @@ func (c *Config) loadResolverSettings(cfg *Config) error {
 }
 
 func (c *Config) loadResolversFromFile(path string) ([]string, error) {
-	data, err := os.ReadFile(path)
+	absPath, err := filepath.Abs(path)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to get absolute path: %v", err)
+	}
+	fmt.Println("Absolute path:", absPath)
+
+	data, err := os.ReadFile(absPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open resolvers file: %w", err)
 	}
@@ -225,16 +231,23 @@ func (c *Config) loadResolversFromFile(path string) ([]string, error) {
 
 	var resolvers []string
 	for _, line := range lines {
+		line = strings.TrimSpace(line)
 		// Skip empty lines.
 		if line == "" {
 			continue
 		}
 
+		// Print the line before parsing.
+		fmt.Printf("Line: '%s'\n", line)
+
 		// Check if each line in the file is a valid IP address.
 		ip := net.ParseIP(line)
 		if ip == nil {
-			return nil, fmt.Errorf("invalid IP address in resolvers file: %s", line)
+			return nil, fmt.Errorf("invalid IP address in resolvers file: %slolollolloo", line)
 		}
+
+		// Print the parsed IP.
+		fmt.Printf("Parsed IP: '%s'\n", ip)
 
 		resolvers = append(resolvers, line)
 	}

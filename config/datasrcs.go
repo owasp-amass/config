@@ -22,6 +22,7 @@ type DataSource struct {
 
 // Credentials contains values required for authenticating with web APIs.
 type Credentials struct {
+	Name     string
 	Username string `yaml:"username"`
 	Password string `yaml:"password"`
 	Apikey   string `yaml:"apikey"`
@@ -66,21 +67,18 @@ func (ds *DataSource) AddCredentials(accountName string, cred Credentials) error
 	return nil
 }
 
-// GetCredentials returns randomly selected Credentials associated with the receiver configuration.
-func (dsc *DataSourceConfig) GetCredentials() *Credentials {
+// GetCredentials returns the first set of Credentials associated with the given DataSource name.
+func (dsc *DataSourceConfig) GetCredentials(dsName string) *Credentials {
 	for _, dataSource := range dsc.Datasources {
-		if num := len(dataSource.Creds); num > 0 {
-			var creds []Credentials
-			for _, c := range dataSource.Creds {
-				creds = append(creds, c)
+		if dataSource.Name == dsName {
+			for _, creds := range dataSource.Creds {
+				return &creds // Return the first set of credentials found
 			}
-			return &creds[0]
 		}
 	}
 	return nil
 }
 
-// LoadDataSourceSettings loads the datasources settings from the YAML file.
 func (c *Config) loadDataSourceSettings(cfg *Config) error {
 	// Retrieve the datasources file path from the options
 	pathInterface, ok := c.Options["datasources"]
@@ -112,13 +110,22 @@ func (c *Config) loadDataSourceSettings(cfg *Config) error {
 	if err != nil {
 		return fmt.Errorf("error unmarshalling datasources YAML: %v", err)
 	}
+
+	// Assign the DataSource name to each Credential's Name field in the Datasource
+	for i := range dsConfig.Datasources {
+		for accountName, creds := range dsConfig.Datasources[i].Creds {
+			creds.Name = dsConfig.Datasources[i].Name
+			dsConfig.Datasources[i].Creds[accountName] = creds
+		}
+	}
+
 	c.DatasrcConfigs = &dsConfig // Assign the unmarshalled DataSourceConfig to the Config struct
 
 	// The global minimum TTL is already loaded during the YAML unmarshalling process
-	for _, ds := range dsConfig.Datasources {
+	for i, ds := range dsConfig.Datasources {
 		// Ensure the TTL is not less than the global minimum
 		if dsConfig.GlobalOptions["minimum_ttl"] > ds.TTL {
-			ds.TTL = dsConfig.GlobalOptions["minimum_ttl"]
+			dsConfig.Datasources[i].TTL = dsConfig.GlobalOptions["minimum_ttl"]
 		}
 	}
 

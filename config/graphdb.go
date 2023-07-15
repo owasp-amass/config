@@ -14,7 +14,7 @@ import (
 type Database struct {
 	System   string // Database system type (Postgres, MySQL, etc.)
 	Primary  bool   // Whether this database is the primary store
-	URI      string // Full URI to the database
+	URL      string // Full URI to the database
 	Username string // Username for authentication
 	Password string // Password for authentication
 	Host     string // Host of the database
@@ -61,7 +61,7 @@ func (c *Config) loadDatabaseSettings(cfg *Config) error {
 	}
 
 	c.GraphDB = &Database{
-		URI:      dbURI,
+		URL:      dbURI,
 		Username: u.User.Username(),
 		System:   u.Scheme,
 		DBName:   dbName,
@@ -86,17 +86,19 @@ func (c *Config) loadDatabaseSettings(cfg *Config) error {
 }
 
 // LocalDatabaseSettings returns the Database for the local bolt store.
-func (c *Config) LocalDatabaseSettings() (string, error) {
-	// Extract the database_uri from the Config options
-	uriInterface, ok := c.Options["database"]
-	if !ok {
-		return "", fmt.Errorf("DatabaseSettings: No database found in the configuration options")
+func (c *Config) LocalDatabaseSettings(dbs []*Database) *Database {
+	bolt := &Database{
+		System:  "local",
+		Primary: true,
+		URL:     OutputDirectory(c.Dir),
 	}
 
-	uri, ok := uriInterface.(string)
-	if !ok {
-		return "", fmt.Errorf("expected 'database' to be a string, got %T", uriInterface)
+	for _, db := range dbs {
+		if db.Primary {
+			bolt.Primary = false
+			break
+		}
 	}
 
-	return uri, nil
+	return bolt
 }

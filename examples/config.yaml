@@ -1,46 +1,47 @@
 scope:
-  domain:
+  domains: # domain names to be in scope
     - example.com
-  ip:
+  ips: # IP addresses to be in scope, multiple methods of inserting ip addresses can be used
     - 192.0.2.1
     - 192.0.2.2
     - 192.168.0.3-8
     - 192.168.0.10-192.168.0.20
-  ASN:
+  asns: # ASNs that are to be in scope
     - 1234
     - 5678
-  CIDR:
+  cidrs: # CIDR ranges that are to be in scope
     - 192.0.2.0/24
     - 192.0.2.128/25
-  ports:
+  ports: # ports to be used when actively reaching a service
     - 80
     - 443
-  blacklist:
-    - example1.com
+  blacklist: # subdomains to be blacklisted
+    - example.example1.com
 options:
   resolvers: 
-    - "examples/resolvers.txt" # array of 1 path or multiple IPs to use as a resolver
-  datasources: "examples/datasources.yaml"
+    - "../examples/resolvers.txt" # array of 1 path or multiple IPs to use as a resolver
+    - 76.76.19.19
+  datasources: "../examples/datasources.yaml" # the file path that will point to the data source configuration
   wordlist: # global wordlist(s) to uses 
-    - "examples/wordlists/deepmagic.com_top50kprefixes.txt"
-    - "examples/wordlists/deepmagic.com_top500prefixes.txt"
-  database: "postgres://username:password@localhost:5432/database?testing=works"
-  bruteforce:
+    - "../examples/wordlists/deepmagic.com_top50kprefixes.txt"
+    - "../examples/wordlists/deepmagic.com_top500prefixes.txt"
+  database: "postgres://username:password@localhost:5432/database?testing=works" # database URI to be used when adding entries
+  bruteforce: # specific option to use when brute forcing is needed
     enabled: true
-    wordlist:
-      - "examples/wordlists/subdomains-top1mil-5000.txt"
-  alterations:
+    wordlists: # wordlist(s) to use that are specific to brute forcing
+      - "../examples/wordlists/subdomains-top1mil-5000.txt"
+  alterations: # specific option to use when brute forcing is needed
     enabled: true
-    wordlist:
-      - "examples/wordlists/subdomains-top1mil-110000.txt"
+    wordlists: # wordlist(s) to use that are specific to alterations
+      - "../examples/wordlists/subdomains-top1mil-110000.txt"
 assets:  # when we get a specific asset, we will perform a specific action on it
   FQDN:
     actions:  # action to perform on the item
       - brute
       - crawl
-    options:  # options that are specific to the action, for example maybe we want a different wordlist when brute forcing FQDNs
+    options:  # options that are specific to the action, for example maybe we want a different wordlist when brute forcing FQDNs as opposed to other assets
       wordlist:
-        - "examples/wordlists/jhaddix_all.txt"
+        - "../examples/wordlists/jhaddix_all.txt"
   IP:
     actions:
       - cert_grab

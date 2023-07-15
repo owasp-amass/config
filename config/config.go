@@ -25,7 +25,6 @@ import (
 	"gopkg.in/yaml.v3"
 
 	"github.com/caffix/stringset"
-	"github.com/google/uuid"
 	"github.com/owasp-amass/amass/v3/resources"
 )
 
@@ -45,22 +44,22 @@ type Updater interface {
 type Config struct {
 	sync.Mutex
 
-	// A Universally Unique Identifier (UUID) for the enumeration
-	UUID uuid.UUID
-
 	// The pseudo-random number generator
 	Rand *rand.Rand
 
 	// Logger for error messages
 	Log *log.Logger
 
-	//Scope struct that contains ASN, CIDR, Domain, IP, and ports in scope
+	// The date/time that discoveries must be active since to be included in the findings
+	CollectionStartTime time.Time
+
+	// Scope struct that contains ASN, CIDR, Domain, IP, and ports in scope
 	Scope Scope `yaml:"scope"`
 
-	//Assets in which the scripts will need identify its purpose, similar to nmap scripts
+	// Assets in which the scripts will need identify its purpose, similar to nmap scripts
 	Assets map[string]*Actions `yaml:"assets"`
 
-	//Defines options like datasources config path and stuff like that
+	// Defines options like datasources config path and stuff like that
 	Options map[string]interface{} `yaml:"options"`
 
 	// Alternative directory for scripts provided by the user
@@ -129,8 +128,8 @@ type Config struct {
 	// Option for verbose logging and output
 	Verbose bool
 
-	// The root domain names that the enumeration will target
-	domains []string
+	// Names provided to seed the enumeration
+	ProvidedNames []string
 
 	// The regular expressions for the root domains added to the enumeration
 	regexps map[string]*regexp.Regexp
@@ -148,23 +147,23 @@ type Actions struct {
 }
 
 type Scope struct {
-	// Names provided to seed the enumeration
-	ProvidedNames []string `yaml:"domain"`
+	// The root domain names that the enumeration will target
+	domains []string `yaml:"domains"`
 
 	// IP Net.IP
-	IP []net.IP `yaml:"-"`
+	Addresses []net.IP `yaml:"-"`
 
 	// The IP addresses specified as in scope
-	Addresses []string `yaml:"ip"`
+	IP []string `yaml:"ips"`
 
 	// ASNs specified as in scope
-	ASNs []int `yaml:"ASN"`
+	ASNs []int `yaml:"asns"`
 
-	//CIDR IPNET
+	// CIDR IPNET
 	CIDRs []*net.IPNet `yaml:"-"`
 
-	//CIDR in scope
-	CIDRStrings []string `yaml:"CIDR"`
+	// CIDR in scope
+	CIDRStrings []string `yaml:"cidrs"`
 
 	// The ports checked for certificates
 	Ports []int `yaml:"ports"`
@@ -176,10 +175,11 @@ type Scope struct {
 // NewConfig returns a default configuration object.
 func NewConfig() *Config {
 	return &Config{
-		UUID:            uuid.New(),
-		Rand:            rand.New(rand.NewSource(time.Now().UTC().UnixNano())),
-		Log:             log.New(io.Discard, "", 0),
-		MinForRecursive: 1,
+		Rand:                rand.New(rand.NewSource(time.Now().UTC().UnixNano())),
+		Log:                 log.New(io.Discard, "", 0),
+		CollectionStartTime: time.Now(),
+		Scope:               Scope{Ports: []int{80, 443}},
+		MinForRecursive:     1,
 		// The following is enum-only, but intel will just ignore them anyway
 		FlipWords:      true,
 		FlipNumbers:    true,
@@ -264,14 +264,14 @@ func (c *Config) LoadSettings(path string) error {
 
 	parseIPs := ParseIPs{} // Create a new ParseIPs, which is a []net.IP under the hood
 	// Validate IP ranges in c.Scope.IP
-	for _, ipRange := range c.Scope.Addresses {
+	for _, ipRange := range c.Scope.IP {
 		if err := parseIPs.parseRange(ipRange); err != nil {
 			return err
 		}
 	}
 
 	// append parseIPs (which is a []net.IP) to c.Scope.IP
-	c.Scope.IP = append(c.Scope.IP, parseIPs...)
+	c.Scope.Addresses = append(c.Scope.Addresses, parseIPs...)
 
 	loads := []func(cfg *Config) error{
 		c.loadAlterationSettings,
@@ -296,14 +296,6 @@ func (s *Scope) toCIDRs(strings []string) []*net.IPNet {
 		cidrs[i] = cidr
 	}
 	return cidrs
-}
-
-func (s *Scope) toIPs(strings []string) []net.IP {
-	ips := make([]net.IP, len(strings))
-	for i, str := range strings {
-		ips[i] = net.ParseIP(str)
-	}
-	return ips
 }
 
 // AcquireConfig populates the Config struct provided by the Config argument.
@@ -350,9 +342,15 @@ func OutputDirectory(dir ...string) string {
 func GetListFromFile(path string) ([]string, error) {
 	var reader io.Reader
 
-	file, err := os.Open(path)
+	absPath, err := filepath.Abs(path)
 	if err != nil {
-		return nil, fmt.Errorf("error opening the file %s: %v", path, err)
+		return nil, fmt.Errorf("Failed to get absolute path: %v", err)
+	}
+	fmt.Println("Absolute path:", absPath)
+
+	file, err := os.Open(absPath)
+	if err != nil {
+		return nil, fmt.Errorf("error opening the file %s: %v", absPath, err)
 	}
 	defer file.Close()
 	reader = file
@@ -363,17 +361,17 @@ func GetListFromFile(path string) ([]string, error) {
 	// next reader
 	head := make([]byte, 512)
 	if _, err = file.Read(head); err != nil {
-		return nil, fmt.Errorf("error reading the first 512 bytes from %s: %s", path, err)
+		return nil, fmt.Errorf("error reading the first 512 bytes from %s: %s", absPath, err)
 	}
 	if _, err = file.Seek(0, 0); err != nil {
-		return nil, fmt.Errorf("error rewinding the file %s: %s", path, err)
+		return nil, fmt.Errorf("error rewinding the file %s: %s", absPath, err)
 	}
 
 	// Read the file as gzip if it's actually compressed
 	if mt := http.DetectContentType(head); mt == "application/gzip" || mt == "application/x-gzip" {
 		gzReader, err := gzip.NewReader(file)
 		if err != nil {
-			return nil, fmt.Errorf("error gz-reading the file %s: %v", path, err)
+			return nil, fmt.Errorf("error gz-reading the file %s: %v", absPath, err)
 		}
 		defer gzReader.Close()
 		reader = gzReader

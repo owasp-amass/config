@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"net"
 	"os"
+	"path/filepath"
 	"reflect"
 	"sort"
 	"testing"
@@ -216,7 +217,7 @@ func TestLoadScopeSettings(t *testing.T) {
 			name: "failure - invalid address range",
 			args: args{cfg: []byte(`
 scope:
-  ip:
+  ips:
     - 1.2.3.4-1.1.1.1`)},
 			wantErr: true,
 			assertionFunc: func(t *testing.T, c *Config) {
@@ -226,14 +227,14 @@ scope:
 			name: "success - valid IPv4 addresses",
 			args: args{cfg: []byte(`
 scope:
-  ip:
+  ips:
     - 1.2.3.4
     - 0.0.0.0
     - 255.255.255.255`)},
 			wantErr: false,
 			assertionFunc: func(t *testing.T, c *Config) {
 				if len(c.Scope.Addresses) != 3 {
-					t.Errorf("Config.loadScopeSettings() - failed to load addresses")
+					t.Errorf("failed to load addresses")
 				}
 			},
 		},
@@ -241,14 +242,14 @@ scope:
 			name: "success - valid IPv6 addresses",
 			args: args{cfg: []byte(`
 scope:
-  ip:
+  ips:
     - '::'
     - '1111:2222:3333:4444:5555:6666:7777:8888'
     - '1:2:0001:deca:f000:00c0:ff:ee'`)},
 			wantErr: false,
 			assertionFunc: func(t *testing.T, c *Config) {
 				if len(c.Scope.Addresses) != 3 {
-					t.Errorf("Config.loadScopeSettings() - failed to load addresses %v", c.Scope.Addresses)
+					t.Errorf("failed to load addresses %v", c.Scope.Addresses)
 				}
 			},
 		},
@@ -256,12 +257,12 @@ scope:
 			name: "success - valid cidr",
 			args: args{cfg: []byte(`
 scope:
-  CIDR:
+  cidrs:
     - 1.2.3.4/8`)},
 			wantErr: false,
 			assertionFunc: func(t *testing.T, c *Config) {
 				if len(c.Scope.CIDRStrings) != 1 {
-					t.Errorf("Config.loadScopeSettings() - failed to load cidr")
+					t.Errorf("failed to load cidr")
 				}
 			},
 		},
@@ -269,7 +270,7 @@ scope:
 			name: "success - valid asn",
 			args: args{cfg: []byte(`
 scope:
-  ASN:
+  asns:
     - 26808`)},
 			wantErr: false,
 			assertionFunc: func(t *testing.T, c *Config) {
@@ -279,7 +280,7 @@ scope:
 			name: "success - valid domain in scope domains",
 			args: args{cfg: []byte(`
 scope:
-  domain:
+  domains:
     - owasp.org`)},
 			wantErr: false,
 			assertionFunc: func(t *testing.T, c *Config) {
@@ -305,7 +306,14 @@ scope:
 			if err != nil {
 				t.Fatal(err)
 			}
-			defer os.Remove(tmpfile.Name()) // clean up
+
+			// Obtain the absolute path of the file
+			absPath, err := filepath.Abs(tmpfile.Name())
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			defer os.Remove(absPath) // clean up
 
 			if _, err := tmpfile.Write(tt.args.cfg); err != nil {
 				t.Fatal(err)
@@ -314,11 +322,11 @@ scope:
 				t.Fatal(err)
 			}
 
-			// Call LoadScopeSettings with the temporary file's name
-			err = c.LoadSettings(tmpfile.Name())
+			// Call LoadScopeSettings with the absolute file path
+			err = c.LoadSettings(absPath)
 
 			if (err != nil) != tt.wantErr {
-				t.Errorf("Config.loadScopeSettings() %v error = %v", tt.name, err)
+				t.Errorf(" %v error = %v", tt.name, err)
 			}
 
 			tt.assertionFunc(t, c)
