@@ -66,10 +66,10 @@ func (c *Config) AddDomain(domain string) {
 	c.regexps[d] = dns.SubdomainRegex(d)
 	if c.regexps[d] != nil {
 		// Add the domain string to the list
-		c.Scope.domains = append(c.Scope.domains, d)
+		c.Scope.Domains = append(c.Scope.Domains, d)
 	}
 
-	c.Scope.domains = stringset.Deduplicate(c.Scope.domains)
+	c.Scope.Domains = stringset.Deduplicate(c.Scope.Domains)
 }
 
 // Domains returns the list of domain names currently in the configuration.
@@ -77,7 +77,7 @@ func (c *Config) Domains() []string {
 	c.Lock()
 	defer c.Unlock()
 
-	return c.Scope.domains
+	return c.Scope.Domains
 }
 
 // IsDomainInScope returns true if the DNS name in the parameter ends with a domain in the config list.

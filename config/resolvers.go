@@ -217,9 +217,8 @@ func (c *Config) loadResolverSettings(cfg *Config) error {
 func (c *Config) loadResolversFromFile(path string) ([]string, error) {
 	absPath, err := filepath.Abs(path)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to get absolute path: %v", err)
+		return nil, fmt.Errorf("failed to get absolute path: %v", err)
 	}
-	fmt.Println("Absolute path:", absPath)
 
 	data, err := os.ReadFile(absPath)
 	if err != nil {
