@@ -236,17 +236,12 @@ func (c *Config) loadResolversFromFile(path string) ([]string, error) {
 			continue
 		}
 
-		// Print the line before parsing.
-		fmt.Printf("Line: '%s'\n", line)
-
 		// Check if each line in the file is a valid IP address.
 		ip := net.ParseIP(line)
 		if ip == nil {
-			return nil, fmt.Errorf("invalid IP address in resolvers file: %slolollolloo", line)
+			return nil, fmt.Errorf("invalid IP address in resolvers file: %s", line)
 		}
 
-		// Print the parsed IP.
-		fmt.Printf("Parsed IP: '%s'\n", ip)
 
 		resolvers = append(resolvers, line)
 	}
