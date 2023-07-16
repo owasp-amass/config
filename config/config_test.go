@@ -49,7 +49,7 @@ func TestAddDomains(t *testing.T) {
 		c.AddDomain(example)
 		want := true
 		got := false
-		for _, l := range c.Scope.domains {
+		for _, l := range c.Scope.Domains {
 			if example == l {
 				got = true
 			}

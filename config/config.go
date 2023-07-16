@@ -148,7 +148,7 @@ type Actions struct {
 
 type Scope struct {
 	// The root domain names that the enumeration will target
-	domains []string `yaml:"domains"`
+	Domains []string `yaml:"domains"`
 
 	// IP Net.IP
 	Addresses []net.IP `yaml:"-"`
@@ -346,7 +346,6 @@ func GetListFromFile(path string) ([]string, error) {
 	if err != nil {
 		return nil, fmt.Errorf("Failed to get absolute path: %v", err)
 	}
-	fmt.Println("Absolute path:", absPath)
 
 	file, err := os.Open(absPath)
 	if err != nil {
