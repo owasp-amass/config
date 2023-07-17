@@ -84,9 +84,10 @@ func (c *Config) loadDatabase(dbURI string) error {
 	}
 
 	db := &Database{
+		Primary:  true, // Set as primary, because it wouldn't be there otherwise.
 		URL:      dbURI,
-		Username: u.User.Username(),
 		System:   u.Scheme,
+		Username: u.User.Username(),
 		DBName:   dbName,
 		Host:     u.Hostname(), // Hostname without port
 		Port:     u.Port(),     // Get port
