@@ -69,7 +69,7 @@ type Config struct {
 	Dir string
 
 	// The graph databases used by the system / enumerations
-	GraphDB *Database
+	GraphDBs []*Database
 
 	// The maximum number of concurrent DNS queries
 	MaxDNSQueries int

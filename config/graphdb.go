@@ -24,16 +24,39 @@ type Database struct {
 }
 
 func (c *Config) loadDatabaseSettings(cfg *Config) error {
-	dbURIInterface, ok := c.Options["database"]
+	var dbURIs []string
+
+	dbURIsInterface, ok := c.Options["databases"]
 	if !ok {
 		return nil
 	}
 
-	dbURI, ok := dbURIInterface.(string)
-	if !ok {
-		return fmt.Errorf("expected 'database' to be a string, got %T", dbURIInterface)
+	// Handle single database URI
+	if dbURI, ok := dbURIsInterface.(string); ok {
+		dbURIs = append(dbURIs, dbURI)
+	} else if dbURIsList, ok := dbURIsInterface.([]interface{}); ok {
+		// Handle multiple database URIs
+		for _, dbURIInterface := range dbURIsList {
+			dbURI, ok := dbURIInterface.(string)
+			if !ok {
+				return fmt.Errorf("expected each 'databases' to be a string, got %T", dbURIInterface)
+			}
+			dbURIs = append(dbURIs, dbURI)
+		}
+	} else {
+		return fmt.Errorf("expected 'databases' to be a string or an array of strings, got %T", dbURIsInterface)
 	}
 
+	for _, dbURI := range dbURIs {
+		if err := c.loadDatabase(dbURI); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (c *Config) loadDatabase(dbURI string) error {
 	u, err := url.Parse(dbURI)
 	if err != nil {
 		return err
@@ -60,7 +83,7 @@ func (c *Config) loadDatabaseSettings(cfg *Config) error {
 		dbName = strings.TrimPrefix(u.Path, "/")
 	}
 
-	c.GraphDB = &Database{
+	db := &Database{
 		URL:      dbURI,
 		Username: u.User.Username(),
 		System:   u.Scheme,
@@ -71,7 +94,7 @@ func (c *Config) loadDatabaseSettings(cfg *Config) error {
 
 	password, isSet := u.User.Password()
 	if isSet {
-		c.GraphDB.Password = password
+		db.Password = password
 	}
 
 	if u.RawQuery != "" {
@@ -79,9 +102,10 @@ func (c *Config) loadDatabaseSettings(cfg *Config) error {
 		if err != nil {
 			return fmt.Errorf("unable to parse database URI query parameters: %v", err)
 		}
-		c.GraphDB.Options = queryParams.Encode() // Encode url.Values to a string
+		db.Options = queryParams.Encode() // Encode url.Values to a string
 	}
 
+	c.GraphDBs = append(c.GraphDBs, db)
 	return nil
 }
 
