@@ -25,7 +25,12 @@ options:
   wordlist: # global wordlist(s) to uses 
     - "../examples/wordlists/deepmagic.com_top50kprefixes.txt"
     - "../examples/wordlists/deepmagic.com_top500prefixes.txt"
+<<<<<<< HEAD
   database: "postgres://username:password@localhost:5432/database?testing=works" # database(s) URI to be used when adding entries
+=======
+  databases: 
+    - "postgres://username:password@localhost:5432/database?testing=works" # database(s) URI to be used when adding entries
+>>>>>>> origin
   bruteforce: # specific option to use when brute forcing is needed
     enabled: true
     wordlists: # wordlist(s) to use that are specific to brute forcing
