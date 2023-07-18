@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-// Database contains values required for connecting with graph databases.
+// Database contains values required for connecting with graph database.
 type Database struct {
 	System   string // Database system type (Postgres, MySQL, etc.)
 	Primary  bool   // Whether this database is the primary store
@@ -29,11 +29,20 @@ func (c *Config) loadDatabaseSettings(cfg *Config) error {
 		return nil
 	}
 
+	// Handle single database URI
 	dbURI, ok := dbURIInterface.(string)
 	if !ok {
 		return fmt.Errorf("expected 'database' to be a string, got %T", dbURIInterface)
 	}
 
+	if err := c.loadDatabase(dbURI); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c *Config) loadDatabase(dbURI string) error {
 	u, err := url.Parse(dbURI)
 	if err != nil {
 		return err
@@ -60,10 +69,11 @@ func (c *Config) loadDatabaseSettings(cfg *Config) error {
 		dbName = strings.TrimPrefix(u.Path, "/")
 	}
 
-	c.GraphDB = &Database{
+	db := &Database{
+		Primary:  true, // Set as primary, because it wouldn't be there otherwise.
 		URL:      dbURI,
-		Username: u.User.Username(),
 		System:   u.Scheme,
+		Username: u.User.Username(),
 		DBName:   dbName,
 		Host:     u.Hostname(), // Hostname without port
 		Port:     u.Port(),     // Get port
@@ -71,7 +81,7 @@ func (c *Config) loadDatabaseSettings(cfg *Config) error {
 
 	password, isSet := u.User.Password()
 	if isSet {
-		c.GraphDB.Password = password
+		db.Password = password
 	}
 
 	if u.RawQuery != "" {
@@ -79,9 +89,10 @@ func (c *Config) loadDatabaseSettings(cfg *Config) error {
 		if err != nil {
 			return fmt.Errorf("unable to parse database URI query parameters: %v", err)
 		}
-		c.GraphDB.Options = queryParams.Encode() // Encode url.Values to a string
+		db.Options = queryParams.Encode() // Encode url.Values to a string
 	}
 
+	c.GraphDBs = append(c.GraphDBs, db)
 	return nil
 }
 

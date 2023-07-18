@@ -56,9 +56,6 @@ type Config struct {
 	// Scope struct that contains ASN, CIDR, Domain, IP, and ports in scope
 	Scope Scope `yaml:"scope"`
 
-	// Assets in which the scripts will need identify its purpose, similar to nmap scripts
-	Assets map[string]*Actions `yaml:"assets"`
-
 	// Defines options like datasources config path and stuff like that
 	Options map[string]interface{} `yaml:"options"`
 
@@ -69,7 +66,7 @@ type Config struct {
 	Dir string
 
 	// The graph databases used by the system / enumerations
-	GraphDB *Database
+	GraphDBs []*Database
 
 	// The maximum number of concurrent DNS queries
 	MaxDNSQueries int
@@ -139,11 +136,6 @@ type Config struct {
 
 	// The data source configurations
 	DatasrcConfigs *DataSourceConfig
-}
-
-type Actions struct {
-	Actions []string            `yaml:"actions"`
-	Options map[string][]string `yaml:"options"`
 }
 
 type Scope struct {
