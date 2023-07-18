@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-// Database contains values required for connecting with graph databases.
+// Database contains values required for connecting with graph database.
 type Database struct {
 	System   string // Database system type (Postgres, MySQL, etc.)
 	Primary  bool   // Whether this database is the primary store
@@ -24,33 +24,19 @@ type Database struct {
 }
 
 func (c *Config) loadDatabaseSettings(cfg *Config) error {
-	var dbURIs []string
-
-	dbURIsInterface, ok := c.Options["databases"]
+	dbURIInterface, ok := c.Options["database"]
 	if !ok {
 		return nil
 	}
 
 	// Handle single database URI
-	if dbURI, ok := dbURIsInterface.(string); ok {
-		dbURIs = append(dbURIs, dbURI)
-	} else if dbURIsList, ok := dbURIsInterface.([]interface{}); ok {
-		// Handle multiple database URIs
-		for _, dbURIInterface := range dbURIsList {
-			dbURI, ok := dbURIInterface.(string)
-			if !ok {
-				return fmt.Errorf("expected each 'databases' to be a string, got %T", dbURIInterface)
-			}
-			dbURIs = append(dbURIs, dbURI)
-		}
-	} else {
-		return fmt.Errorf("expected 'databases' to be a string or an array of strings, got %T", dbURIsInterface)
+	dbURI, ok := dbURIInterface.(string)
+	if !ok {
+		return fmt.Errorf("expected 'database' to be a string, got %T", dbURIInterface)
 	}
 
-	for _, dbURI := range dbURIs {
-		if err := c.loadDatabase(dbURI); err != nil {
-			return err
-		}
+	if err := c.loadDatabase(dbURI); err != nil {
+		return err
 	}
 
 	return nil
