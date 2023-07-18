@@ -188,7 +188,7 @@ func (c *Config) loadResolverSettings(cfg *Config) error {
 		}
 
 		// rStr is not an IP address, so we assume it is a file path.
-		absPath, err := filepath.Abs(rStr)
+		absPath, err := c.AbsPathFromConfigDir(rStr)
 		if err != nil {
 			return fmt.Errorf("failed to get absolute path for resolver file: %w", err)
 		}

@@ -44,9 +44,14 @@ func (c *Config) loadBruteForceSettings(cfg *Config) error {
 				return fmt.Errorf("bruteforce wordlist_file item is not a string")
 			}
 
-			wordlist, err := GetListFromFile(wordlistPath)
+			absPath, err := c.AbsPathFromConfigDir(wordlistPath)
 			if err != nil {
-				return fmt.Errorf("unable to load the file in the bruteforce wordlist_file setting: %s: %v", wordlistPath, err)
+				return fmt.Errorf("failed to get absolute path for wordlist file: %w", err)
+			}
+
+			wordlist, err := GetListFromFile(absPath)
+			if err != nil {
+				return fmt.Errorf("unable to load the file in the bruteforce wordlist_file setting: %s: %v", absPath, err)
 			}
 
 			c.Wordlist = append(c.Wordlist, wordlist...)
@@ -91,9 +96,14 @@ func (c *Config) loadAlterationSettings(cfg *Config) error {
 				return fmt.Errorf("alterations wordlist_file item is not a string")
 			}
 
-			wordlist, err := GetListFromFile(wordlistPath)
+			absPath, err := c.AbsPathFromConfigDir(wordlistPath)
 			if err != nil {
-				return fmt.Errorf("unable to load the file in the alterations wordlist_file setting: %s: %v", wordlistPath, err)
+				return fmt.Errorf("failed to get absolute path for wordlist file: %w", err)
+			}
+
+			wordlist, err := GetListFromFile(absPath)
+			if err != nil {
+				return fmt.Errorf("unable to load the file in the alterations wordlist_file setting: %s: %v", absPath, err)
 			}
 
 			c.AltWordlist = append(c.AltWordlist, wordlist...)

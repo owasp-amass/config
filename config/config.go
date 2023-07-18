@@ -58,6 +58,9 @@ type Config struct {
 	// Defines options like datasources config path and stuff like that
 	Options *map[string]interface{} `yaml:"options"`
 
+	// Filepath of the configuration file. It is needed as a seed incase of relative paths in the config.
+	Filepath string
+
 	// Alternative directory for scripts provided by the user
 	ScriptsDirectory string
 
@@ -232,6 +235,14 @@ func (c *Config) CheckSettings() error {
 
 // LoadSettings parses settings from an .yaml file and assigns them to the Config.
 func (c *Config) LoadSettings(path string) error {
+	// Determine and store the absolute path of the config file
+	absolutePath, err := filepath.Abs(path)
+	if err != nil {
+		return fmt.Errorf("failed to get absolute path of the configuration file: %v", err)
+	}
+	c.Filepath = absolutePath
+
+	// The rest of your code follows...
 	data, err := os.ReadFile(path)
 	if err != nil {
 		return fmt.Errorf("failed to load the main configuration file: %v", err)
@@ -272,6 +283,25 @@ func (c *Config) LoadSettings(path string) error {
 	return nil
 }
 
+func (c *Config) AbsPathFromConfigDir(path string) (string, error) {
+	// Get the directory of the current config file
+	cfgDir := filepath.Dir(c.Filepath)
+
+	fmt.Println("Config file path: ", c.Filepath) // Add this line
+
+	// Clean the incoming path to ensure it doesn't have any problematic elements
+	cleanPath := filepath.Clean(path)
+
+	// Construct the absolute path by joining the config directory and the relative path
+	absPath := filepath.Join(cfgDir, cleanPath)
+
+	// Check if the file exists
+	if _, err := os.Stat(absPath); os.IsNotExist(err) {
+		return "", fmt.Errorf("file does not exist: %v", err)
+	}
+
+	return absPath, nil
+}
 func (s *Scope) toCIDRs(strings []string) []*net.IPNet {
 	cidrs := make([]*net.IPNet, len(strings))
 	for i, str := range strings {
@@ -285,9 +315,9 @@ func (s *Scope) toCIDRs(strings []string) []*net.IPNet {
 func AcquireConfig(dir, file string, cfg *Config) error {
 	var path, dircfg, syscfg string
 
-	d := OutputDirectory(dir)
-	if finfo, err := os.Stat(d); d != "" && !os.IsNotExist(err) && finfo.IsDir() {
-		dircfg = filepath.Join(d, defaultCfgFile)
+	cfg.Filepath = OutputDirectory(dir)
+	if finfo, err := os.Stat(cfg.Filepath); cfg.Filepath != "" && !os.IsNotExist(err) && finfo.IsDir() {
+		dircfg = filepath.Join(cfg.Filepath, defaultCfgFile)
 	}
 
 	if runtime.GOOS != "windows" {

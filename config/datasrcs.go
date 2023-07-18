@@ -7,7 +7,6 @@ package config
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 	"strings"
 
 	"gopkg.in/yaml.v3"
@@ -99,7 +98,7 @@ func (c *Config) loadDataSourceSettings(cfg *Config) error {
 	}
 
 	// Construct the absolute path by joining the current working directory and the relative path
-	absPath, err := filepath.Abs(path)
+	absPath, err := c.AbsPathFromConfigDir(path)
 	if err != nil {
 		return fmt.Errorf("failed to get absolute path: %v", err)
 	}
