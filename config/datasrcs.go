@@ -44,13 +44,14 @@ func (c *Config) GetDataSourceConfig(source string) *DataSource {
 		return nil
 	}
 
-	for i := range c.DatasrcConfigs.Datasources {
-		if strings.ToLower(c.DatasrcConfigs.Datasources[i].Name) == key {
-			return &c.DatasrcConfigs.Datasources[i]
+	var dsc *DataSource
+	for _, src := range c.DataSrcConfigs.Datasources {
+		if strings.ToLower(src.Name) == key {
+			dsc = &src
+			break
 		}
 	}
-
-	return nil
+	return dsc
 }
 
 // AddCredentials adds the Credentials provided to the configuration.
@@ -69,9 +70,9 @@ func (ds *DataSource) AddCredentials(accountName string, cred Credentials) error
 
 // GetCredentials returns the first set of Credentials associated with the given DataSource name.
 func (dsc *DataSourceConfig) GetCredentials(dsName string) *Credentials {
-	for _, dataSource := range dsc.Datasources {
-		if dataSource.Name == dsName {
-			for _, creds := range dataSource.Creds {
+	for _, src := range dsc.Datasources {
+		if src.Name == dsName {
+			for _, creds := range src.Creds {
 				return &creds // Return the first set of credentials found
 			}
 		}
@@ -112,20 +113,21 @@ func (c *Config) loadDataSourceSettings(cfg *Config) error {
 	}
 
 	// Assign the DataSource name to each Credential's Name field in the Datasource
-	for i := range dsConfig.Datasources {
-		for accountName, creds := range dsConfig.Datasources[i].Creds {
-			creds.Name = dsConfig.Datasources[i].Name
-			dsConfig.Datasources[i].Creds[accountName] = creds
+	for _, src := range dsConfig.Datasources {
+		for accountName, creds := range src.Creds {
+			creds.Name = src.Name
+			src.Creds[accountName] = creds
 		}
 	}
 
-	c.DatasrcConfigs = &dsConfig // Assign the unmarshalled DataSourceConfig to the Config struct
+	// Assign the unmarshalled DataSourceConfig to the Config struct
+	c.DataSrcConfigs = &dsConfig
 
 	// The global minimum TTL is already loaded during the YAML unmarshalling process
-	for i, ds := range dsConfig.Datasources {
+	for _, ds := range dsConfig.Datasources {
 		// Ensure the TTL is not less than the global minimum
 		if dsConfig.GlobalOptions["minimum_ttl"] > ds.TTL {
-			dsConfig.Datasources[i].TTL = dsConfig.GlobalOptions["minimum_ttl"]
+			ds.TTL = dsConfig.GlobalOptions["minimum_ttl"]
 		}
 	}
 

@@ -15,7 +15,7 @@ func TestGetDataSourceConfig(t *testing.T) {
 	c := NewConfig()
 
 	// Add a DataSource to the Config object to use it in the test
-	c.DatasrcConfigs = &DataSourceConfig{
+	c.DataSrcConfigs = &DataSourceConfig{
 		Datasources: []DataSource{
 			{
 				Name: name,
@@ -37,7 +37,7 @@ func TestAddCredentials(t *testing.T) {
 	c := NewConfig()
 
 	// Add a DataSource to the Config object to use it in the test
-	c.DatasrcConfigs = &DataSourceConfig{
+	c.DataSrcConfigs = &DataSourceConfig{
 		Datasources: []DataSource{
 			{
 				Name: name,
@@ -60,7 +60,7 @@ func TestGetCredentials(t *testing.T) {
 	c := NewConfig()
 
 	// Add a DataSource with credentials to the Config object to use it in the test
-	c.DatasrcConfigs = &DataSourceConfig{
+	c.DataSrcConfigs = &DataSourceConfig{
 		Datasources: []DataSource{
 			{
 				Name: "test",
@@ -73,8 +73,7 @@ func TestGetCredentials(t *testing.T) {
 			},
 		},
 	}
-
-	dsc := c.DatasrcConfigs
+	dsc := c.DataSrcConfigs
 
 	// Pass the name of the data source when calling GetCredentials
 	if creds := dsc.GetCredentials("test"); creds == nil || creds.Username != "username" {
@@ -107,7 +106,7 @@ global_options:
 	}
 
 	// Assign the unmarshalled DataSourceConfig to the Config struct
-	c.DatasrcConfigs = &dsConfig
+	c.DataSrcConfigs = &dsConfig
 
 	dsc := c.GetDataSourceConfig("AlienVault")
 	if dsc == nil {
@@ -115,11 +114,11 @@ global_options:
 	}
 
 	// Pass the name of the data source when calling GetCredentials
-	if creds := c.DatasrcConfigs.GetCredentials("AlienVault"); creds == nil || creds.Username != "avuser" {
+	if creds := c.DataSrcConfigs.GetCredentials("AlienVault"); creds == nil || creds.Username != "avuser" {
 		t.Errorf("Failed to load data source credentials")
 	}
 
-	if c.DatasrcConfigs.GlobalOptions["minimum_ttl"] != 1440 {
+	if c.DataSrcConfigs.GlobalOptions["minimum_ttl"] != 1440 {
 		t.Errorf("Failed to load global options")
 	}
 }
