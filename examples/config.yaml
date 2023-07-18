@@ -34,14 +34,3 @@ options:
     enabled: true
     wordlists: # wordlist(s) to use that are specific to alterations
       - "../examples/wordlists/subdomains-top1mil-110000.txt"
-assets:  # when we get a specific asset, we will perform a specific action on it
-  FQDN:
-    actions:  # action to perform on the item
-      - brute
-      - crawl
-    options:  # options that are specific to the action, for example maybe we want a different wordlist when brute forcing FQDNs as opposed to other assets
-      wordlist:
-        - "../examples/wordlists/jhaddix_all.txt"
-  IP:
-    actions:
-      - cert_grab
