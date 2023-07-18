@@ -135,7 +135,7 @@ type Config struct {
 	Mode string
 
 	// The data source configurations
-	DatasrcConfigs *DataSourceConfig
+	DataSrcConfigs *DataSourceConfig
 }
 
 type Scope struct {
@@ -183,6 +183,7 @@ func NewConfig() *Config {
 		MinimumTTL:     1440,
 		ResolversQPS:   DefaultQueriesPerPublicResolver,
 		TrustedQPS:     DefaultQueriesPerBaselineResolver,
+		DataSrcConfigs: &DataSourceConfig{},
 	}
 }
 
