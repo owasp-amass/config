@@ -30,7 +30,7 @@ options:
     wordlists: []`)},
 			wantErr: false,
 			assertionFunc: func(t *testing.T, c *Config) {
-				bruteForce, ok := c.Options["brute_force"].(map[string]interface{})
+				bruteForce, ok := (*c.Options)["brute_force"].(map[string]interface{})
 				if !ok {
 					t.Errorf("BruteForce not found")
 					return
@@ -53,7 +53,7 @@ options:
     some_setting: true`)},
 			wantErr: false,
 			assertionFunc: func(t *testing.T, c *Config) {
-				if _, ok := c.Options["brute_force"]; ok {
+				if _, ok := (*c.Options)["brute_force"]; ok {
 					t.Errorf("BruteForce should not be found")
 				}
 			},
@@ -67,7 +67,7 @@ options:
     wordlists: []`)},
 			wantErr: false,
 			assertionFunc: func(t *testing.T, c *Config) {
-				bruteForce, ok := c.Options["brute_force"].(map[string]interface{})
+				bruteForce, ok := (*c.Options)["brute_force"].(map[string]interface{})
 				if !ok {
 					t.Errorf("BruteForce not found")
 					return
@@ -86,7 +86,7 @@ options:
     enabled: true`)},
 			wantErr: false,
 			assertionFunc: func(t *testing.T, c *Config) {
-				bruteForce, ok := c.Options["brute_force"].(map[string]interface{})
+				bruteForce, ok := (*c.Options)["brute_force"].(map[string]interface{})
 				if !ok {
 					t.Errorf("BruteForce not found")
 					return
@@ -107,7 +107,7 @@ options:
       - "wordlist_file"`)},
 			wantErr: false,
 			assertionFunc: func(t *testing.T, c *Config) {
-				bruteForce, ok := c.Options["brute_force"].(map[string]interface{})
+				bruteForce, ok := (*c.Options)["brute_force"].(map[string]interface{})
 				if !ok {
 					t.Errorf("BruteForce not found")
 					return
@@ -152,7 +152,7 @@ options:
             `)},
 			wantErr: false,
 			assertionFunc: func(t *testing.T, c *Config) {
-				nameAlteration, ok := c.Options["name_alteration"].(map[string]interface{})
+				nameAlteration, ok := (*c.Options)["name_alteration"].(map[string]interface{})
 				if !ok {
 					t.Errorf("NameAlteration not found")
 					return
@@ -174,7 +174,7 @@ options:
             `)},
 			wantErr: false,
 			assertionFunc: func(t *testing.T, c *Config) {
-				nameAlteration, ok := c.Options["name_alteration"].(map[string]interface{})
+				nameAlteration, ok := (*c.Options)["name_alteration"].(map[string]interface{})
 				if !ok {
 					t.Errorf("NameAlteration not found")
 					return
@@ -198,7 +198,7 @@ options:
             `)},
 			wantErr: false,
 			assertionFunc: func(t *testing.T, c *Config) {
-				nameAlteration, ok := c.Options["name_alteration"].(map[string]interface{})
+				nameAlteration, ok := (*c.Options)["name_alteration"].(map[string]interface{})
 				if !ok {
 					t.Errorf("NameAlteration not found")
 					return

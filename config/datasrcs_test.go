@@ -11,24 +11,54 @@ import (
 )
 
 func TestGetDataSourceConfig(t *testing.T) {
-	name := "test"
 	c := NewConfig()
 
-	// Add a DataSource to the Config object to use it in the test
+	// Scenario 1: Empty DataSourceConfig
 	c.DataSrcConfigs = &DataSourceConfig{
-		Datasources: []DataSource{
-			{
-				Name: name,
-			},
+		Datasources: &[]DataSource{},
+	}
+	if dsc := c.GetDataSourceConfig("nonexistent"); dsc != nil {
+		t.Errorf("GetDataSourceConfig returned a non-nil value when provided an nonexistent argument")
+	}
+
+	// Scenario 2: DataSource with no creds
+	nameNoCreds := "testNoCreds"
+	c.DataSrcConfigs.Datasources = &[]DataSource{
+		{
+			Name: nameNoCreds,
 		},
 	}
-
-	if dsc := c.GetDataSourceConfig(""); dsc != nil {
-		t.Errorf("GetDataSourceConfig returned a non-nil value when provided an invalid argument")
+	if dsc := c.GetDataSourceConfig(nameNoCreds); dsc == nil || dsc.Name != nameNoCreds {
+		t.Errorf("GetDataSourceConfig returned an error when provided a valid argument with no creds")
 	}
 
-	if dsc := c.GetDataSourceConfig(name); dsc == nil || dsc.Name != name {
-		t.Errorf("GetDataSourceConfig returned an error when provided a valid argument")
+	// Scenario 3: DataSource with empty creds
+	nameEmptyCreds := "testEmptyCreds"
+	creds := make(map[string]Credentials)
+	c.DataSrcConfigs.Datasources = &[]DataSource{
+		{
+			Name:  nameEmptyCreds,
+			Creds: &creds,
+		},
+	}
+	if dsc := c.GetDataSourceConfig(nameEmptyCreds); dsc == nil || dsc.Name != nameEmptyCreds {
+		t.Errorf("GetDataSourceConfig returned an error when provided a valid argument with empty creds")
+	}
+
+	// Scenario 4: DataSource with creds
+	nameWithCreds := "testWithCreds"
+	creds["key"] = Credentials{
+		Username: "user",
+		Password: "pass",
+	}
+	c.DataSrcConfigs.Datasources = &[]DataSource{
+		{
+			Name:  nameWithCreds,
+			Creds: &creds,
+		},
+	}
+	if dsc := c.GetDataSourceConfig(nameWithCreds); dsc == nil || dsc.Name != nameWithCreds {
+		t.Errorf("GetDataSourceConfig returned an error when provided a valid argument with creds")
 	}
 }
 
@@ -38,7 +68,7 @@ func TestAddCredentials(t *testing.T) {
 
 	// Add a DataSource to the Config object to use it in the test
 	c.DataSrcConfigs = &DataSourceConfig{
-		Datasources: []DataSource{
+		Datasources: &[]DataSource{
 			{
 				Name: name,
 			},
@@ -51,7 +81,7 @@ func TestAddCredentials(t *testing.T) {
 		t.Errorf("AddCredentials returned an error when provided an valid arguments: %v", err)
 	}
 
-	if dsc.Creds["account1"].Username != "username" {
+	if (*dsc.Creds)["account1"].Username != "username" {
 		t.Errorf("AddCredentials failed to enter the new credentials into the data source configuration")
 	}
 }
@@ -61,10 +91,10 @@ func TestGetCredentials(t *testing.T) {
 
 	// Add a DataSource with credentials to the Config object to use it in the test
 	c.DataSrcConfigs = &DataSourceConfig{
-		Datasources: []DataSource{
+		Datasources: &[]DataSource{
 			{
 				Name: "test",
-				Creds: map[string]Credentials{
+				Creds: &map[string]Credentials{
 					"account1": {
 						Username: "username",
 						Password: "password",
@@ -118,7 +148,7 @@ global_options:
 		t.Errorf("Failed to load data source credentials")
 	}
 
-	if c.DataSrcConfigs.GlobalOptions["minimum_ttl"] != 1440 {
+	if (*c.DataSrcConfigs.GlobalOptions)["minimum_ttl"] != 1440 {
 		t.Errorf("Failed to load global options")
 	}
 }

@@ -25,7 +25,6 @@ import (
 	"gopkg.in/yaml.v3"
 
 	"github.com/caffix/stringset"
-	"github.com/owasp-amass/amass/v3/resources"
 )
 
 const (
@@ -54,10 +53,10 @@ type Config struct {
 	CollectionStartTime time.Time
 
 	// Scope struct that contains ASN, CIDR, Domain, IP, and ports in scope
-	Scope Scope `yaml:"scope"`
+	Scope *Scope `yaml:"scope"`
 
 	// Defines options like datasources config path and stuff like that
-	Options map[string]interface{} `yaml:"options"`
+	Options *map[string]interface{} `yaml:"options"`
 
 	// Alternative directory for scripts provided by the user
 	ScriptsDirectory string
@@ -170,8 +169,19 @@ func NewConfig() *Config {
 		Rand:                rand.New(rand.NewSource(time.Now().UTC().UnixNano())),
 		Log:                 log.New(io.Discard, "", 0),
 		CollectionStartTime: time.Now(),
-		Scope:               Scope{Ports: []int{80, 443}},
-		MinForRecursive:     1,
+		Scope: &Scope{
+			Domains:     []string{}, // Initialize the Domains slice
+			Ports:       []int{80, 443},
+			Addresses:   []net.IP{},     // Initialize the Addresses slice
+			IP:          []string{},     // Initialize the IP slice
+			ASNs:        []int{},        // Initialize the ASNs slice
+			CIDRs:       []*net.IPNet{}, // Initialize the CIDRs slice
+			CIDRStrings: []string{},     // Initialize the CIDRStrings slice
+			Blacklist:   []string{},     // Initialize the Blacklist slice
+		},
+		Options:         new(map[string]interface{}), // Initialize the Options map
+		GraphDBs:        []*Database{},               // Initialize the GraphDBs slice
+		MinForRecursive: 1,
 		// The following is enum-only, but intel will just ignore them anyway
 		FlipWords:      true,
 		FlipNumbers:    true,
@@ -183,7 +193,10 @@ func NewConfig() *Config {
 		MinimumTTL:     1440,
 		ResolversQPS:   DefaultQueriesPerPublicResolver,
 		TrustedQPS:     DefaultQueriesPerBaselineResolver,
-		DataSrcConfigs: &DataSourceConfig{},
+		DataSrcConfigs: &DataSourceConfig{
+			Datasources:   new([]DataSource),   // Initialize the Datasources slice
+			GlobalOptions: new(map[string]int), // Initialize the GlobalOptions map
+		},
 	}
 }
 
@@ -199,33 +212,10 @@ func (c *Config) CheckSettings() error {
 	if c.BruteForcing {
 		if c.Passive {
 			return errors.New("brute forcing cannot be performed without DNS resolution")
-		} else if len(c.Wordlist) == 0 {
-			f, err := resources.GetResourceFile("namelist.txt")
-			if err != nil {
-				return err
-			}
-
-			c.Wordlist, err = getWordList(f)
-			if err != nil {
-				return err
-			}
 		}
 	}
 	if c.Passive && c.Active {
 		return errors.New("active enumeration cannot be performed without DNS resolution")
-	}
-	if c.Alterations {
-		if len(c.AltWordlist) == 0 {
-			f, err := resources.GetResourceFile("alterations.txt")
-			if err != nil {
-				return err
-			}
-
-			c.AltWordlist, err = getWordList(f)
-			if err != nil {
-				return err
-			}
-		}
 	}
 
 	c.Wordlist, err = ExpandMaskWordlist(c.Wordlist)
@@ -337,7 +327,7 @@ func GetListFromFile(path string) ([]string, error) {
 
 	absPath, err := filepath.Abs(path)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to get absolute path: %v", err)
+		return nil, fmt.Errorf("failed to get absolute path: %v", err)
 	}
 
 	file, err := os.Open(absPath)

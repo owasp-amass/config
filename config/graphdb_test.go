@@ -11,7 +11,7 @@ import (
 func TestLoadDatabaseSettings(t *testing.T) {
 	// Test with no database in options
 	c := NewConfig()
-	c.Options = make(map[string]interface{})
+	c.Options = &map[string]interface{}{}
 	err := c.loadDatabaseSettings(c)
 	if err != nil {
 		t.Errorf("Got an error when no database is provided, expected nil. Error: %v", err)
@@ -19,8 +19,8 @@ func TestLoadDatabaseSettings(t *testing.T) {
 
 	// Test with invalid type in database
 	c = NewConfig()
-	c.Options = make(map[string]interface{})
-	c.Options["database"] = 1234
+	c.Options = &map[string]interface{}{}
+	(*c.Options)["database"] = 1234
 	err = c.loadDatabaseSettings(c)
 	if err == nil {
 		t.Errorf("Expected an error when database is not a string or array of strings, got nil")
@@ -28,8 +28,8 @@ func TestLoadDatabaseSettings(t *testing.T) {
 
 	// Test with invalid URI
 	c = NewConfig()
-	c.Options = make(map[string]interface{})
-	c.Options["database"] = "not a valid URI"
+	c.Options = &map[string]interface{}{}
+	(*c.Options)["database"] = "not a valid URI"
 	err = c.loadDatabaseSettings(c)
 	if err == nil {
 		t.Errorf("Expected an error when database is not a valid URI, got nil")
@@ -37,8 +37,8 @@ func TestLoadDatabaseSettings(t *testing.T) {
 
 	// Test with valid URI without password but with database name
 	c = NewConfig()
-	c.Options = make(map[string]interface{})
-	c.Options["database"] = "mysql://username@localhost/mydatabase"
+	c.Options = &map[string]interface{}{}
+	(*c.Options)["database"] = "mysql://username@localhost/mydatabase"
 	err = c.loadDatabaseSettings(c)
 	if err != nil {
 		t.Errorf("Got an error when valid database is provided, expected nil. Error: %v", err)
@@ -55,8 +55,8 @@ func TestLoadDatabaseSettings(t *testing.T) {
 
 	// Test with valid URI with password and path
 	c = NewConfig()
-	c.Options = make(map[string]interface{})
-	c.Options["database"] = "postgres://username:password@localhost:5432/database?sslmode=disable"
+	c.Options = &map[string]interface{}{}
+	(*c.Options)["database"] = "postgres://username:password@localhost:5432/database?sslmode=disable"
 	err = c.loadDatabaseSettings(c)
 	if err != nil {
 		t.Errorf("Got an error when valid database is provided, expected nil. Error: %v", err)

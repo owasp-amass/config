@@ -46,7 +46,7 @@ func TestConfigAddDomains(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			c := new(Config)
+			c := NewConfig() // Use NewConfig() instead of new(Config)
 			c.AddDomains(tt.args.domains...)
 			for _, d := range tt.args.domains {
 				var found bool
@@ -182,7 +182,7 @@ func TestConfigBlacklistSubdomain(t *testing.T) {
 	}{
 		{
 			name:    "blacklist success",
-			config:  new(Config),
+			config:  NewConfig(), // Use NewConfig() instead of new(Config)
 			domains: []string{"user", "tmp", "admin"},
 		},
 	}
@@ -299,7 +299,7 @@ scope:
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			c := new(Config)
+			c := NewConfig()
 
 			// Create a temporary file and write the config data to it
 			tmpfile, err := ioutil.TempFile("", "config")

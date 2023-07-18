@@ -24,12 +24,15 @@ type Database struct {
 }
 
 func (c *Config) loadDatabaseSettings(cfg *Config) error {
-	dbURIInterface, ok := c.Options["database"]
+	if c.Options == nil {
+		return fmt.Errorf("config options are not initialized")
+	}
+
+	dbURIInterface, ok := (*c.Options)["database"]
 	if !ok {
 		return nil
 	}
 
-	// Handle single database URI
 	dbURI, ok := dbURIInterface.(string)
 	if !ok {
 		return fmt.Errorf("expected 'database' to be a string, got %T", dbURIInterface)
@@ -92,7 +95,11 @@ func (c *Config) loadDatabase(dbURI string) error {
 		db.Options = queryParams.Encode() // Encode url.Values to a string
 	}
 
+	if c.GraphDBs == nil {
+		c.GraphDBs = make([]*Database, 0)
+	}
 	c.GraphDBs = append(c.GraphDBs, db)
+
 	return nil
 }
 
@@ -105,7 +112,7 @@ func (c *Config) LocalDatabaseSettings(dbs []*Database) *Database {
 	}
 
 	for _, db := range dbs {
-		if db.Primary {
+		if db != nil && db.Primary {
 			bolt.Primary = false
 			break
 		}

@@ -160,7 +160,7 @@ func (c *Config) CalcMaxQPS() {
 
 func (c *Config) loadResolverSettings(cfg *Config) error {
 	// Fetch resolvers from the Options map in the Config.
-	resolversRaw, ok := c.Options["resolvers"]
+	resolversRaw, ok := (*c.Options)["resolvers"]
 	if !ok {
 		// "resolvers" not found in options, so nothing to do here.
 		return nil
@@ -241,7 +241,6 @@ func (c *Config) loadResolversFromFile(path string) ([]string, error) {
 		if ip == nil {
 			return nil, fmt.Errorf("invalid IP address in resolvers file: %s", line)
 		}
-
 
 		resolvers = append(resolvers, line)
 	}
