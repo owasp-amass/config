@@ -242,8 +242,8 @@ func (c *Config) LoadSettings(path string) error {
 	}
 	c.Filepath = absolutePath
 
-	// The rest of your code follows...
-	data, err := os.ReadFile(path)
+	// Open the configuration file
+	data, err := os.ReadFile(c.Filepath)
 	if err != nil {
 		return fmt.Errorf("failed to load the main configuration file: %v", err)
 	}
