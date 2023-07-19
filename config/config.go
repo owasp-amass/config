@@ -22,9 +22,8 @@ import (
 	"sync"
 	"time"
 
-	"gopkg.in/yaml.v3"
-
 	"github.com/caffix/stringset"
+	"gopkg.in/yaml.v3"
 )
 
 const (
