@@ -287,8 +287,6 @@ func (c *Config) AbsPathFromConfigDir(path string) (string, error) {
 	// Get the directory of the current config file
 	cfgDir := filepath.Dir(c.Filepath)
 
-	fmt.Println("Config file path: ", c.Filepath) // Add this line
-
 	// Clean the incoming path to ensure it doesn't have any problematic elements
 	cleanPath := filepath.Clean(path)
 
