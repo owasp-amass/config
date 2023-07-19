@@ -28,7 +28,7 @@ func (c *Config) loadDatabaseSettings(cfg *Config) error {
 		return fmt.Errorf("config options are not initialized")
 	}
 
-	dbURIInterface, ok := (*c.Options)["database"]
+	dbURIInterface, ok := c.Options["database"]
 	if !ok {
 		return nil
 	}

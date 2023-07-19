@@ -56,7 +56,7 @@ type Config struct {
 	Scope *Scope `yaml:"scope"`
 
 	// Defines options like datasources config path and stuff like that
-	Options *map[string]interface{} `yaml:"options"`
+	Options map[string]interface{} `yaml:"options"`
 
 	// Filepath of the configuration file. It is needed as a seed incase of relative paths in the config.
 	Filepath string
@@ -172,33 +172,21 @@ func NewConfig() *Config {
 		Rand:                rand.New(rand.NewSource(time.Now().UTC().UnixNano())),
 		Log:                 log.New(io.Discard, "", 0),
 		CollectionStartTime: time.Now(),
-		Scope: &Scope{
-			Domains:     []string{}, // Initialize the Domains slice
-			Ports:       []int{80, 443},
-			Addresses:   []net.IP{},     // Initialize the Addresses slice
-			IP:          []string{},     // Initialize the IP slice
-			ASNs:        []int{},        // Initialize the ASNs slice
-			CIDRs:       []*net.IPNet{}, // Initialize the CIDRs slice
-			CIDRStrings: []string{},     // Initialize the CIDRStrings slice
-			Blacklist:   []string{},     // Initialize the Blacklist slice
-		},
-		Options:         new(map[string]interface{}), // Initialize the Options map
-		GraphDBs:        []*Database{},               // Initialize the GraphDBs slice
-		MinForRecursive: 1,
-		// The following is enum-only, but intel will just ignore them anyway
-		FlipWords:      true,
-		FlipNumbers:    true,
-		AddWords:       true,
-		AddNumbers:     true,
-		MinForWordFlip: 2,
-		EditDistance:   1,
-		Recursive:      true,
-		MinimumTTL:     1440,
-		ResolversQPS:   DefaultQueriesPerPublicResolver,
-		TrustedQPS:     DefaultQueriesPerBaselineResolver,
+		Scope:               &Scope{Ports: []int{80, 443}},
+		Options:             make(map[string]interface{}),
+		MinForRecursive:     1,
+		FlipWords:           true,
+		FlipNumbers:         true,
+		AddWords:            true,
+		AddNumbers:          true,
+		MinForWordFlip:      2,
+		EditDistance:        1,
+		Recursive:           true,
+		MinimumTTL:          1440,
+		ResolversQPS:        DefaultQueriesPerPublicResolver,
+		TrustedQPS:          DefaultQueriesPerBaselineResolver,
 		DataSrcConfigs: &DataSourceConfig{
-			Datasources:   new([]DataSource),   // Initialize the Datasources slice
-			GlobalOptions: new(map[string]int), // Initialize the GlobalOptions map
+			GlobalOptions: make(map[string]int),
 		},
 	}
 }

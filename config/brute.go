@@ -11,7 +11,7 @@ import (
 )
 
 func (c *Config) loadBruteForceSettings(cfg *Config) error {
-	bruteforceRaw, ok := (*c.Options)["bruteforce"]
+	bruteforceRaw, ok := c.Options["bruteforce"]
 	if !ok {
 		return nil
 	}
@@ -63,7 +63,7 @@ func (c *Config) loadBruteForceSettings(cfg *Config) error {
 }
 
 func (c *Config) loadAlterationSettings(cfg *Config) error {
-	alterationsRaw, ok := (*c.Options)["alterations"]
+	alterationsRaw, ok := c.Options["alterations"]
 	if !ok {
 		return nil
 	}

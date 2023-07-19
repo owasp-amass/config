@@ -160,7 +160,7 @@ func (c *Config) CalcMaxQPS() {
 
 func (c *Config) loadResolverSettings(cfg *Config) error {
 	// Fetch resolvers from the Options map in the Config.
-	resolversRaw, ok := (*c.Options)["resolvers"]
+	resolversRaw, ok := c.Options["resolvers"]
 	if !ok {
 		// "resolvers" not found in options, so nothing to do here.
 		return nil

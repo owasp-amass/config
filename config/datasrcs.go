@@ -16,7 +16,7 @@ import (
 type DataSource struct {
 	Name  string                  `yaml:"name"`
 	TTL   int                     `yaml:"ttl"`
-	Creds *map[string]Credentials `yaml:"creds"`
+	Creds map[string]*Credentials `yaml:"creds"`
 }
 
 // Credentials contains values required for authenticating with web APIs.
@@ -29,8 +29,8 @@ type Credentials struct {
 }
 
 type DataSourceConfig struct {
-	Datasources   *[]DataSource   `yaml:"datasources"`
-	GlobalOptions *map[string]int `yaml:"global_options"`
+	Datasources   []*DataSource  `yaml:"datasources"`
+	GlobalOptions map[string]int `yaml:"global_options"`
 }
 
 // GetDataSourceConfig returns the DataSourceConfig associated with the data source name argument.
@@ -39,14 +39,14 @@ func (c *Config) GetDataSourceConfig(source string) *DataSource {
 	defer c.Unlock()
 
 	key := strings.ToLower(strings.TrimSpace(source))
-	if key == "" || c.DataSrcConfigs == nil || c.DataSrcConfigs.Datasources == nil {
+	if key == "" || c.DataSrcConfigs == nil {
 		return nil
 	}
 
 	var dsc *DataSource
-	for _, src := range *c.DataSrcConfigs.Datasources {
+	for _, src := range c.DataSrcConfigs.Datasources {
 		if strings.ToLower(src.Name) == key {
-			dsc = &src
+			dsc = src
 			break
 		}
 	}
@@ -54,17 +54,16 @@ func (c *Config) GetDataSourceConfig(source string) *DataSource {
 }
 
 // AddCredentials adds the Credentials provided to the configuration.
-func (ds *DataSource) AddCredentials(accountName string, cred Credentials) error {
+func (ds *DataSource) AddCredentials(accountName string, cred *Credentials) error {
 	if accountName == "" || ds == nil {
 		return fmt.Errorf("AddCredentials: The accountName argument is invalid")
 	}
 
 	if ds.Creds == nil {
-		temp := make(map[string]Credentials)
-		ds.Creds = &temp
+		ds.Creds = make(map[string]*Credentials)
 	}
 
-	(*ds.Creds)[accountName] = cred
+	ds.Creds[accountName] = cred
 	return nil
 }
 
@@ -74,10 +73,10 @@ func (dsc *DataSourceConfig) GetCredentials(dsName string) *Credentials {
 		return nil
 	}
 
-	for _, src := range *dsc.Datasources {
+	for _, src := range dsc.Datasources {
 		if src.Name == dsName && src.Creds != nil {
-			for _, creds := range *src.Creds {
-				return &creds // Return the first set of credentials found
+			for _, creds := range src.Creds {
+				return creds // Return the first set of credentials found
 			}
 		}
 	}
@@ -86,7 +85,7 @@ func (dsc *DataSourceConfig) GetCredentials(dsName string) *Credentials {
 
 func (c *Config) loadDataSourceSettings(cfg *Config) error {
 	// Retrieve the datasources file path from the options
-	pathInterface, ok := (*c.Options)["datasources"]
+	pathInterface, ok := c.Options["datasources"]
 	if !ok {
 		// "datasources" not found in options, so nothing to do here.
 		return nil
@@ -117,14 +116,14 @@ func (c *Config) loadDataSourceSettings(cfg *Config) error {
 	}
 
 	// Assign the DataSource name to each Credential's Name field in the Datasource
-	for _, src := range *dsConfig.Datasources {
+	for _, src := range dsConfig.Datasources {
 		if src.Creds == nil {
-			src.Creds = &map[string]Credentials{} // Initialize the Creds field if it is nil
+			src.Creds = make(map[string]*Credentials)
 		}
 
-		for accountName, creds := range *src.Creds {
+		for accountName, creds := range src.Creds {
 			creds.Name = src.Name
-			(*src.Creds)[accountName] = creds
+			src.Creds[accountName] = creds
 		}
 	}
 
@@ -132,10 +131,10 @@ func (c *Config) loadDataSourceSettings(cfg *Config) error {
 	c.DataSrcConfigs = &dsConfig
 
 	// The global minimum TTL is already loaded during the YAML unmarshalling process
-	for _, ds := range *dsConfig.Datasources {
+	for _, ds := range dsConfig.Datasources {
 		// Ensure the TTL is not less than the global minimum
-		if (*dsConfig.GlobalOptions)["minimum_ttl"] > ds.TTL {
-			ds.TTL = (*dsConfig.GlobalOptions)["minimum_ttl"]
+		if dsConfig.GlobalOptions["minimum_ttl"] > ds.TTL {
+			ds.TTL = dsConfig.GlobalOptions["minimum_ttl"]
 		}
 	}
 
