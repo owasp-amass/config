@@ -5,7 +5,6 @@
 package config
 
 import (
-	"io/ioutil"
 	"net"
 	"os"
 	"path/filepath"
@@ -302,7 +301,7 @@ scope:
 			c := NewConfig()
 
 			// Create a temporary file and write the config data to it
-			tmpfile, err := ioutil.TempFile("", "config")
+			tmpfile, err := os.CreateTemp("", "config")
 			if err != nil {
 				t.Fatal(err)
 			}

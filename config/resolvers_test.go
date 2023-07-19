@@ -77,7 +77,7 @@ func TestLoadResolverSettings(t *testing.T) {
 	}
 
 	// Test with valid file path with resolvers
-	os.WriteFile("testResolvers.txt", []byte("192.0.2.3\n192.0.2.4"), 0644)
+	_ = os.WriteFile("testResolvers.txt", []byte("192.0.2.3\n192.0.2.4"), 0644)
 	c.Options["resolvers"] = []interface{}{"192.0.2.1", "192.0.2.2", "testResolvers.txt"}
 	err = c.loadResolverSettings(c)
 	if err != nil {
@@ -96,7 +96,7 @@ func TestLoadResolversFromFile(t *testing.T) {
 	}
 
 	// Test with invalid IPs in file
-	os.WriteFile("invalidResolvers.txt", []byte("192.0.2.300\ninvalidIP"), 0644)
+	_ = os.WriteFile("invalidResolvers.txt", []byte("192.0.2.300\ninvalidIP"), 0644)
 	_, err = c.loadResolversFromFile("invalidResolvers.txt")
 	if err == nil {
 		t.Errorf("Expected an error when file contains invalid IPs, got nil")
@@ -104,7 +104,7 @@ func TestLoadResolversFromFile(t *testing.T) {
 	os.Remove("invalidResolvers.txt")
 
 	// Test with valid IPs in file
-	os.WriteFile("validResolvers.txt", []byte("192.0.2.3\n192.0.2.4"), 0644)
+	_ = os.WriteFile("validResolvers.txt", []byte("192.0.2.3\n192.0.2.4"), 0644)
 	resolvers, err := c.loadResolversFromFile("validResolvers.txt")
 	if err != nil {
 		t.Errorf("Got an error when file contains valid IPs, expected nil. Error: %v", err)
