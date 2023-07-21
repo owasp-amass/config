@@ -270,7 +270,19 @@ func (c *Config) LoadSettings(path string) error {
 	return nil
 }
 
+// Creates a file path that is relative the the configuration file location.
+// If the path is already absolute, return it as is.
 func (c *Config) AbsPathFromConfigDir(path string) (string, error) {
+	// If the path is already absolute, return it as is
+	if filepath.IsAbs(path) {
+		// Check if the file exists
+		if _, err := os.Stat(path); os.IsNotExist(err) {
+			return "", fmt.Errorf("file does not exist: %v", err)
+		}
+
+		return path, nil
+	}
+
 	// Get the directory of the current config file
 	cfgDir := filepath.Dir(c.Filepath)
 
