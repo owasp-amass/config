@@ -14,23 +14,23 @@ import (
 
 // DataSourceConfig contains the configurations specific to a data source.
 type DataSource struct {
-	Name  string                  `yaml:"name"`
-	TTL   int                     `yaml:"ttl"`
-	Creds map[string]*Credentials `yaml:"creds"`
+	Name  string                  `yaml:"name,omitempty"`
+	TTL   int                     `yaml:"ttl,omitempty"`
+	Creds map[string]*Credentials `yaml:"creds,omitempty"`
 }
 
 // Credentials contains values required for authenticating with web APIs.
 type Credentials struct {
-	Name     string
-	Username string `yaml:"username"`
-	Password string `yaml:"password"`
-	Apikey   string `yaml:"apikey"`
-	Secret   string `yaml:"secret"`
+	Name     string `yaml:"-"`
+	Username string `yaml:"username,omitempty"`
+	Password string `yaml:"password,omitempty"`
+	Apikey   string `yaml:"apikey,omitempty"`
+	Secret   string `yaml:"secret,omitempty"`
 }
 
 type DataSourceConfig struct {
-	Datasources   []*DataSource  `yaml:"datasources"`
-	GlobalOptions map[string]int `yaml:"global_options"`
+	Datasources   []*DataSource  `yaml:"datasources,omitempty"`
+	GlobalOptions map[string]int `yaml:"global_options,omitempty"`
 }
 
 // GetDataSourceConfig returns the DataSourceConfig associated with the data source name argument.

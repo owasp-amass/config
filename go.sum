@@ -374,8 +374,12 @@ github.com/openzipkin/zipkin-go v0.2.5/go.mod h1:KpXfKdgRDnnhsxw4pNIH9Md5lyFqKUa
 github.com/orisano/pixelmatch v0.0.0-20210112091706-4fa4c7ba91d5/go.mod h1:nZgzbfBr3hhjoZnS66nKrHmduYNpc34ny7RK4z5/HM0=
 github.com/orisano/pixelmatch v0.0.0-20220722002657-fb0b55479cde h1:x0TT0RDC7UhAVbbWWBzr41ElhJx5tXPWkIHA2HWPRuw=
 github.com/orisano/pixelmatch v0.0.0-20220722002657-fb0b55479cde/go.mod h1:nZgzbfBr3hhjoZnS66nKrHmduYNpc34ny7RK4z5/HM0=
+github.com/owasp-amass/amass/v3 v3.23.3 h1:1kMKDKdPgMSCQyl2N4bUBDKRtQfCMBf76UizjQ9BQY0=
+github.com/owasp-amass/amass/v3 v3.23.3/go.mod h1:OfxXvKFxKhsUiDthfLEpb5TqqPMoAzLGDh7JkUinq80=
 github.com/owasp-amass/amass/v4 v4.0.1 h1:/kYD6ZZ6bnZ6wSyT1Eoa91rjxOzbkIMhjpnl4Y1ZI6k=
 github.com/owasp-amass/amass/v4 v4.0.1/go.mod h1:nz10TPbd2RA6n7QQWwmary8p0rSACm4PD4kPB9sB1tY=
+github.com/owasp-amass/amass/v4 v4.0.2 h1:0D3iiabNMe9XowkNrmPEj/GYUm2xme9/uXOGZ4mMC4c=
+github.com/owasp-amass/amass/v4 v4.0.2/go.mod h1:0RaWqOdx8ncRVZozoq9NH+vSLk7Kgv3sU6r8OYLPPzU=
 github.com/owasp-amass/resolve v0.6.20 h1:wy4v+Z8sfQhn5Q+eVbQ6sb/b0wREfdauOL9SJzQyyNA=
 github.com/pascaldekloe/goe v0.0.0-20180627143212-57f6aae5913c/go.mod h1:lzWF7FIEvWOWxwDKqyGYQf6ZUaNfKdP144TG7ZOy1lc=
 github.com/pascaldekloe/goe v0.1.0/go.mod h1:lzWF7FIEvWOWxwDKqyGYQf6ZUaNfKdP144TG7ZOy1lc=

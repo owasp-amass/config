@@ -40,129 +40,129 @@ type Updater interface {
 
 // Config passes along Amass configuration settings and options.
 type Config struct {
-	sync.Mutex
+	sync.Mutex `yaml:"-"`
 
 	// The pseudo-random number generator
-	Rand *rand.Rand
+	Rand *rand.Rand `yaml:"-"`
 
 	// Logger for error messages
-	Log *log.Logger
+	Log *log.Logger `yaml:"-"`
 
 	// The date/time that discoveries must be active since to be included in the findings
-	CollectionStartTime time.Time
+	CollectionStartTime time.Time `yaml:"-"`
 
 	// Scope struct that contains ASN, CIDR, Domain, IP, and ports in scope
-	Scope *Scope `yaml:"scope"`
+	Scope *Scope `yaml:"scope,omitempty"`
 
 	// Defines options like datasources config path and stuff like that
-	Options map[string]interface{} `yaml:"options"`
+	Options map[string]interface{} `yaml:"options,omitempty"`
 
 	// Filepath of the configuration file. It is needed as a seed incase of relative paths in the config.
-	Filepath string
+	Filepath string `yaml:"-"`
 
 	// Alternative directory for scripts provided by the user
-	ScriptsDirectory string
+	ScriptsDirectory string `yaml:"-"`
 
 	// The directory that stores the bolt db and other files created
-	Dir string
+	Dir string `yaml:"-"`
 
 	// The graph databases used by the system / enumerations
-	GraphDBs []*Database
+	GraphDBs []*Database `yaml:"-"`
 
 	// The maximum number of concurrent DNS queries
-	MaxDNSQueries int
+	MaxDNSQueries int `yaml:"-"`
 
 	// The list of words to use when generating names
-	Wordlist []string
+	Wordlist []string `yaml:"-"`
 
 	// Will the enumeration including brute forcing techniques
-	BruteForcing bool
+	BruteForcing bool `yaml:"-"`
 
 	// Will recursive brute forcing be performed?
-	Recursive bool
+	Recursive bool `yaml:"-"`
 
 	// Minimum number of subdomain discoveries before performing recursive brute forcing
-	MinForRecursive int
+	MinForRecursive int `yaml:"-"`
 
 	// Maximum depth for bruteforcing
-	MaxDepth int
+	MaxDepth int `yaml:"-"`
 
 	// Will discovered subdomain name alterations be generated?
-	Alterations    bool
-	FlipWords      bool
-	FlipNumbers    bool
-	AddWords       bool
-	AddNumbers     bool
-	MinForWordFlip int
-	EditDistance   int
-	AltWordlist    []string
+	Alterations    bool     `yaml:"-"`
+	FlipWords      bool     `yaml:"-"`
+	FlipNumbers    bool     `yaml:"-"`
+	AddWords       bool     `yaml:"-"`
+	AddNumbers     bool     `yaml:"-"`
+	MinForWordFlip int      `yaml:"-"`
+	EditDistance   int      `yaml:"-"`
+	AltWordlist    []string `yaml:"-"`
 
 	// Only access the data sources for names and return results?
-	Passive bool
+	Passive bool `yaml:"-"`
 
 	// Determines if zone transfers will be attempted
-	Active bool
+	Active bool `yaml:"-"`
 
-	blacklistLock sync.Mutex
+	blacklistLock sync.Mutex `yaml:"-"`
 
 	// A list of data sources that should not be utilized
 	SourceFilter struct {
-		Include bool // true = include, false = exclude
-		Sources []string
-	}
+		Include bool     `yaml:"-"` // true = include, false = exclude
+		Sources []string `yaml:"-"`
+	} `yaml:"-"`
 
 	// The minimum number of minutes that data source responses will be reused
-	MinimumTTL int
+	MinimumTTL int `yaml:"-"`
 
 	// Type of DNS records to query for
-	RecordTypes []string
+	RecordTypes []string `yaml:"-"`
 
 	// Resolver settings
-	Resolvers        []string
-	ResolversQPS     int
-	TrustedResolvers []string
-	TrustedQPS       int
+	Resolvers        []string `yaml:"-"`
+	ResolversQPS     int      `yaml:"-"`
+	TrustedResolvers []string `yaml:"-"`
+	TrustedQPS       int      `yaml:"-"`
 
 	// Option for verbose logging and output
-	Verbose bool
+	Verbose bool `yaml:"-"`
 
 	// Names provided to seed the enumeration
-	ProvidedNames []string
+	ProvidedNames []string `yaml:"-"`
 
 	// The regular expressions for the root domains added to the enumeration
-	regexps map[string]*regexp.Regexp
+	regexps map[string]*regexp.Regexp `yaml:"-"`
 
 	// Mode should be determined based on scripts utilized
-	Mode string
+	Mode string `yaml:"-"`
 
 	// The data source configurations
-	DataSrcConfigs *DataSourceConfig
+	DataSrcConfigs *DataSourceConfig `yaml:"-"`
 }
 
 type Scope struct {
 	// The root domain names that the enumeration will target
-	Domains []string `yaml:"domains"`
+	Domains []string `yaml:"domains,omitempty"`
 
 	// IP Net.IP
 	Addresses []net.IP `yaml:"-"`
 
 	// The IP addresses specified as in scope
-	IP []string `yaml:"ips"`
+	IP []string `yaml:"ips,omitempty"`
 
 	// ASNs specified as in scope
-	ASNs []int `yaml:"asns"`
+	ASNs []int `yaml:"asns,omitempty"`
 
 	// CIDR IPNET
 	CIDRs []*net.IPNet `yaml:"-"`
 
 	// CIDR in scope
-	CIDRStrings []string `yaml:"cidrs"`
+	CIDRStrings []string `yaml:"cidrs,omitempty"`
 
 	// The ports checked for certificates
-	Ports []int `yaml:"ports"`
+	Ports []int `yaml:"ports,omitempty"`
 
 	// A blacklist of subdomain names that will not be investigated
-	Blacklist []string `yaml:"blacklist"`
+	Blacklist []string `yaml:"blacklist,omitempty"`
 }
 
 // NewConfig returns a default configuration object.
