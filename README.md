@@ -4,7 +4,7 @@
   <img src="https://github.com/owasp-amass/amass/blob/master/images/amass_video.gif">
 </p>
 
-[![GoDoc](https://github.com/owasp-amass/config/?utm_source=godoc)](https://pkg.go.dev/github.com/owasp-amass/config/config)
+[![GoDoc](https://pkg.go.dev/badge/github.com/owasp-amass/config?utm_source=godoc)](https://pkg.go.dev/github.com/owasp-amass/config/config)
 [![Follow on Twitter](https://img.shields.io/twitter/follow/owaspamass.svg?logo=twitter)](https://twitter.com/owaspamass)
 [![Chat on Discord](https://img.shields.io/discord/433729817918308352.svg?logo=discord)](https://discord.gg/HNePVyX3cp)
 
