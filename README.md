@@ -11,7 +11,7 @@
 This configuration file repo serves the purpose of parsing the configuration used for tools under the OWASP AMASS framework.
 
 ## Users' Guide
-For a more detailed guide on how to use the  configuration file as a OAM user, please check out the [User's Guide](./user_guide.md)!
+For a more detailed guide on using the configuration file as an OAM user, please check out the [User's Guide](./user_guide.md)!
 
 ## Corporate Supporters
 
