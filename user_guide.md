@@ -58,7 +58,7 @@ The *Options* root object contains the following nested objects that a user can 
 |wordlist| The wordlist file(s) to use upon collection| File path(s), such as `./wordlists/deepmagic.com_top50kprefixes.txt`
 |database| The database where the information will be stored | The URI of the database, it must follow the format of `scheme://username:password@host:port/database_name?options=works`, an example is `postgres://amass:iscool@192.168.54.23:5432/amass?sslmode=disable`
 |bruteforce| To enable brute-forcing methods in collection and wordlists to use during brute-forcing | See [here](#bruteforcealterations-objects) for objects under *bruteforce* |
-|alterations| To enable alteration methods in collection and wordlists to use during alteration | See [here](#bruteforcealterations-objects) for objects under alterations |
+|alterations| To enable alteration methods in collection and wordlists to use during alteration | See [here](#bruteforcealterations-objects) for objects under *alterations* |
 
 ### Bruteforce/Alterations Objects
 Under the `bruteforce` and `alterations` objects, there are two child objects that users could use:
