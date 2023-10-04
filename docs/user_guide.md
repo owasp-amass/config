@@ -1,10 +1,12 @@
 # Configuration Users' Guide
-![Network graph](./images/network_06092018.png "Amass Network Mapping")
+![Network graph](../images/network_06092018.png "Amass Network Mapping")
 
 ----
 
 The configuration & data sources file that the AMASS framework uses, is in YAML format. 
 Users can add assets in scope, options, and data sources in use to fine-tune the user's collection experience.
+
+To view the documentation for `oam_i2y` (the tool that converts the legacy INI configuration file into the new YAML format), please check out the [oam_i2y Users' Guide](./oam_i2y_user_guide.md).
 
 ## Using the configuration & data sources file
 There are two files utilized for the amass framework. One file (`config.yaml` for example) dealing with the configuration settings, the other (`datasources.yaml` for example) dealing with the data source API credits. One common oversight that users usually fall for is utilizing the data source file without inputting it as a value in the configuration file.
