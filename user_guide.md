@@ -36,7 +36,7 @@ The configuration file is formatted with two root objects in the YAML format.
 |scope  | Assets that are deemed *in scope*|
 |options| Options to fine-tune the collection experience|
 
-These mobjects can be used together in the configuration file, or a user may choose to only utilize one of the root objects in their configuration file.
+These objects can be used together in the configuration file, or a user may choose to only utilize one of the root objects in their configuration file.
 
 The *Scope* root object contains the following nested objects that a user can use:
 
