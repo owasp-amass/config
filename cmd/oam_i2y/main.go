@@ -80,7 +80,11 @@ func main() {
 	}
 
 	iniConfig := Config{}
-	iniConfig.LoadSettings(iniFile)
+	err := iniConfig.LoadSettings(iniFile)
+	if err != nil {
+		fmt.Printf("Failed to load INI configuration: %v\n", err)
+		return
+	}
 
 	// this code below will take all the datasources specified in the ini and populate the filled ones into the yaml
 	yamlDataSources := make([]*config.DataSource, 0)
