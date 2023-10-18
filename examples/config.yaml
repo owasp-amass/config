@@ -1,3 +1,6 @@
+# The scope objects can be used as seed data and obviously values to determine the scope of the engine.
+# The options are items that I believe we can implement as well (Obviously not now but later in the future)
+
 scope:
   domains: # domain names to be in scope
     - example.com
@@ -34,3 +37,21 @@ options:
     enabled: true
     wordlists: # wordlist(s) to use that are specific to alterations
       - "./wordlists/subdomains-top1mil-110000.txt"
+  engine: "https://username:password@localhost:443/graphql?testing=works" # the URI to the engine
+  confidence: 50 # default confidence level for all transformations unless otherwise specified
+
+Transformations:
+  FQDN->IP:
+    priority: 1
+    confidence: 80
+  FQDN->WHOIS:
+    priority: 2
+  FQDN->TLS: 
+    exclude: true
+  IP->IP:
+    priority: 1
+    confidence: 80
+  IP->WHOIS:
+    priority: 2
+  IP->TLS:
+    # leaving both priority and confidence out

@@ -137,6 +137,12 @@ type Config struct {
 
 	// The data source configurations
 	DataSrcConfigs *DataSourceConfig `yaml:"-"`
+
+	// The Transformations map will contain incoming assets, and what handlers should be called.
+	Transformations map[string]*Transformation `yaml:"Transformations"`
+
+	// The engine APIURI configuration
+	EngineAPI *EngAPI `yaml:"-"`
 }
 
 type Scope struct {
@@ -187,6 +193,7 @@ func NewConfig() *Config {
 		DataSrcConfigs: &DataSourceConfig{
 			GlobalOptions: make(map[string]int),
 		},
+		Transformations: make(map[string]*Transformation),
 	}
 }
 
@@ -254,15 +261,17 @@ func (c *Config) LoadSettings(path string) error {
 	// append parseIPs (which is a []net.IP) to c.Scope.IP
 	c.Scope.Addresses = append(c.Scope.Addresses, parseIPs...)
 
-	loads := []func(cfg *Config) error{
+	loads := []func() error{
 		c.loadAlterationSettings,
 		c.loadBruteForceSettings,
 		c.loadDatabaseSettings,
 		c.loadDataSourceSettings,
 		c.loadResolverSettings,
+		c.loadTransformSettings,
+		c.loadEngineSettings,
 	}
 	for _, load := range loads {
-		if err := load(c); err != nil {
+		if err := load(); err != nil {
 			return err
 		}
 	}

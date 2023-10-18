@@ -83,7 +83,7 @@ func (dsc *DataSourceConfig) GetCredentials(dsName string) *Credentials {
 	return nil
 }
 
-func (c *Config) loadDataSourceSettings(cfg *Config) error {
+func (c *Config) loadDataSourceSettings() error {
 	// Retrieve the datasources file path from the options
 	pathInterface, ok := c.Options["datasources"]
 	if !ok {

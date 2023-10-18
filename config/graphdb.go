@@ -23,7 +23,7 @@ type Database struct {
 	Options  string // Extra options used while connecting to the database
 }
 
-func (c *Config) loadDatabaseSettings(cfg *Config) error {
+func (c *Config) loadDatabaseSettings() error {
 	if c.Options == nil {
 		return fmt.Errorf("config options are not initialized")
 	}
