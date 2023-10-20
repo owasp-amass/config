@@ -7,8 +7,8 @@ import (
 
 // Transformation represents an individual transofmration with optional priority & confidence.
 type Transformation struct {
-	From       string   `yaml:"-" json:"-"`
-	To         string   `yaml:"-" json:"-"`
+	From       string   `yaml:"-" json:"From,omitempty"`
+	To         string   `yaml:"-" json:"To,omitempty"`
 	Priority   int      `yaml:"priority,omitempty" json:"priority,omitempty"`
 	Confidence int      `yaml:"confidence,omitempty" json:"confidence,omitempty"`
 	Exclude    []string `yaml:"exclude,omitempty" json:"exclude,omitempty"`
