@@ -40,14 +40,14 @@ options:
   engine: "https://username:password@localhost:443/graphql?testing=works" # the URI to the engine
   confidence: 50 # default confidence level for all transformations unless otherwise specified
 
-Transformations:
+transformations:
   FQDN->IP:
     priority: 1
     confidence: 80
   FQDN->WHOIS:
     priority: 2
-  FQDN->TLS: 
-    exclude: true
+  FQDN->ALL: 
+    exclude: [TLS,FQDN]
   IP->IP:
     priority: 1
     confidence: 80

@@ -12,18 +12,18 @@ import (
 
 // Database contains values required for connecting with graph database.
 type Database struct {
-	System   string // Database system type (Postgres, MySQL, etc.)
-	Primary  bool   // Whether this database is the primary store
-	URL      string // Full URI to the database
-	Username string // Username for authentication
-	Password string // Password for authentication
-	Host     string // Host of the database
-	Port     string // Port of the database
-	DBName   string // Name of the database
-	Options  string // Extra options used while connecting to the database
+	System   string `json:"system,omitempty"`   // Database system type (Postgres, MySQL, etc.)
+	Primary  bool   `json:"primary,omitempty"`  // Whether this database is the primary store
+	URL      string `json:"url,omitempty"`      // Full URI to the database
+	Username string `json:"username,omitempty"` // Username for authentication
+	Password string `json:"password,omitempty"` // Password for authentication
+	Host     string `json:"host,omitempty"`     // Host of the database
+	Port     string `json:"port,omitempty"`     // Port of the database
+	DBName   string `json:"dbName,omitempty"`   // Name of the database
+	Options  string `json:"options,omitempty"`  // Extra options used while connecting to the database
 }
 
-func (c *Config) loadDatabaseSettings() error {
+func (c *Config) loadDatabaseSettings(cfg *Config) error {
 	if c.Options == nil {
 		return fmt.Errorf("config options are not initialized")
 	}

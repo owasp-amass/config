@@ -49,12 +49,12 @@ Transformations:
 
 // Utility function to unmarshal YAML and load transformation settings
 func prepareConfig(yamlInput []byte) (*Config, error) {
-	conf := &Config{}
+	conf := NewConfig()
 	err := yaml.Unmarshal(yamlInput, conf)
 	if err != nil {
 		return nil, err
 	}
-	err = conf.loadTransformSettings()
+	err = conf.loadTransformSettings(conf)
 	return conf, err
 }
 

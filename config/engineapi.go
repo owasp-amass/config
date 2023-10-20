@@ -27,7 +27,7 @@ type EngAPI struct {
 // loadEngineSettings is responsible for extracting the "engine" URL from the application's configuration
 // and initializing the EngAPI structure. It performs several checks such as ensuring the configuration options
 // are initialized and the "engine" key is present and of type string. If any of these checks fail, an error is returned.
-func (c *Config) loadEngineSettings() error {
+func (c *Config) loadEngineSettings(cfg *Config) error {
 	// Check if configuration options are initialized; if not, return an error.
 	if c.Options == nil {
 		return fmt.Errorf("config options are not initialized")

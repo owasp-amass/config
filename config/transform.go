@@ -7,11 +7,11 @@ import (
 
 // Transformation represents an individual transofmration with optional priority & confidence.
 type Transformation struct {
-	From       string `yaml:"-"`
-	To         string `yaml:"-"`
-	Priority   int    `yaml:"priority,omitempty"`
-	Confidence int    `yaml:"confidence,omitempty"`
-	Exclude    bool   `yaml:"exclude,omitempty"`
+	From       string   `yaml:"-" json:"-"`
+	To         string   `yaml:"-" json:"-"`
+	Priority   int      `yaml:"priority,omitempty" json:"priority,omitempty"`
+	Confidence int      `yaml:"confidence,omitempty" json:"confidence,omitempty"`
+	Exclude    []string `yaml:"exclude,omitempty" json:"exclude,omitempty"`
 }
 
 // loadTransformSettings processes the Transformations map from the configuration,
@@ -31,7 +31,7 @@ type Transformation struct {
 // and invalid key formats.
 //
 // Returns an error if it encounters an invalid key format or conflicting transformation rules.
-func (c *Config) loadTransformSettings() error {
+func (c *Config) loadTransformSettings(cfg *Config) error {
 	// Map to track 'From' types that have a 'none' transformation, indicating no processing should occur.
 	fromWithNone := make(map[string]bool)
 

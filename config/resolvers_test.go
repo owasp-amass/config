@@ -50,28 +50,28 @@ func TestLoadResolverSettings(t *testing.T) {
 	c.Options = make(map[string]interface{})
 
 	// Test with no resolvers in options
-	err := c.loadResolverSettings()
+	err := c.loadResolverSettings(c)
 	if err != nil {
 		t.Errorf("Expected no error when no resolvers are provided, got an error")
 	}
 
 	// Test with incorrect type in resolvers
 	c.Options["resolvers"] = "Not a slice"
-	err = c.loadResolverSettings()
+	err = c.loadResolverSettings(c)
 	if err == nil {
 		t.Errorf("Expected an error when resolvers are not a slice, got nil")
 	}
 
 	// Test with valid resolvers
 	c.Options["resolvers"] = []interface{}{"192.0.2.1", "192.0.2.2"}
-	err = c.loadResolverSettings()
+	err = c.loadResolverSettings(c)
 	if err != nil {
 		t.Errorf("Got an error when valid resolvers are provided, expected nil. Error: %v", err)
 	}
 
 	// Test with valid resolvers including duplicates
 	c.Options["resolvers"] = []interface{}{"192.0.2.1", "192.0.2.2", "192.0.2.1"}
-	err = c.loadResolverSettings()
+	err = c.loadResolverSettings(c)
 	if err != nil {
 		t.Errorf("Got an error when valid resolvers (including duplicates) are provided, expected nil. Error: %v", err)
 	}
@@ -79,7 +79,7 @@ func TestLoadResolverSettings(t *testing.T) {
 	// Test with valid file path with resolvers
 	_ = os.WriteFile("testResolvers.txt", []byte("192.0.2.3\n192.0.2.4"), 0644)
 	c.Options["resolvers"] = []interface{}{"192.0.2.1", "192.0.2.2", "testResolvers.txt"}
-	err = c.loadResolverSettings()
+	err = c.loadResolverSettings(c)
 	if err != nil {
 		t.Errorf("Got an error when valid resolvers and valid file path are provided, expected nil. Error: %v", err)
 	}

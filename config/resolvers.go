@@ -158,7 +158,7 @@ func (c *Config) CalcMaxQPS() {
 	c.MaxDNSQueries = (len(c.Resolvers) * c.ResolversQPS) + (len(c.TrustedResolvers) * c.TrustedQPS)
 }
 
-func (c *Config) loadResolverSettings() error {
+func (c *Config) loadResolverSettings(cfg *Config) error {
 	// Fetch resolvers from the Options map in the Config.
 	resolversRaw, ok := c.Options["resolvers"]
 	if !ok {

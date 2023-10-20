@@ -14,23 +14,23 @@ import (
 
 // DataSourceConfig contains the configurations specific to a data source.
 type DataSource struct {
-	Name  string                  `yaml:"name,omitempty"`
-	TTL   int                     `yaml:"ttl,omitempty"`
-	Creds map[string]*Credentials `yaml:"creds,omitempty"`
+	Name  string                  `yaml:"name,omitempty" json:"name,omitempty"`
+	TTL   int                     `yaml:"ttl,omitempty" json:"ttl,omitempty"`
+	Creds map[string]*Credentials `yaml:"creds,omitempty" json:"creds,omitempty"`
 }
 
 // Credentials contains values required for authenticating with web APIs.
 type Credentials struct {
-	Name     string `yaml:"-"`
-	Username string `yaml:"username,omitempty"`
-	Password string `yaml:"password,omitempty"`
-	Apikey   string `yaml:"apikey,omitempty"`
-	Secret   string `yaml:"secret,omitempty"`
+	Name     string `yaml:"-" json:"-"`
+	Username string `yaml:"username,omitempty" json:"username,omitempty"`
+	Password string `yaml:"password,omitempty" json:"password,omitempty"`
+	Apikey   string `yaml:"apikey,omitempty" json:"apikey,omitempty"`
+	Secret   string `yaml:"secret,omitempty" json:"secret,omitempty"`
 }
 
 type DataSourceConfig struct {
-	Datasources   []*DataSource  `yaml:"datasources,omitempty"`
-	GlobalOptions map[string]int `yaml:"global_options,omitempty"`
+	Datasources   []*DataSource  `yaml:"datasources,omitempty" json:"datasources,omitempty"`
+	GlobalOptions map[string]int `yaml:"global_options,omitempty" json:"global_options,omitempty"`
 }
 
 // GetDataSourceConfig returns the DataSourceConfig associated with the data source name argument.
@@ -83,7 +83,7 @@ func (dsc *DataSourceConfig) GetCredentials(dsName string) *Credentials {
 	return nil
 }
 
-func (c *Config) loadDataSourceSettings() error {
+func (c *Config) loadDataSourceSettings(cfg *Config) error {
 	// Retrieve the datasources file path from the options
 	pathInterface, ok := c.Options["datasources"]
 	if !ok {

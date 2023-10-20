@@ -41,138 +41,138 @@ type Updater interface {
 
 // Config passes along Amass configuration settings and options.
 type Config struct {
-	sync.Mutex `yaml:"-"`
+	sync.Mutex `yaml:"-" json:"-"`
 
 	// A Universally Unique Identifier (UUID) for the enumeration
-	UUID uuid.UUID `yaml:"-"`
+	UUID uuid.UUID `yaml:"-" json:"-"`
 
 	// The pseudo-random number generator
-	Rand *rand.Rand `yaml:"-"`
+	Rand *rand.Rand `yaml:"-" json:"-"`
 
 	// Logger for error messages
-	Log *log.Logger `yaml:"-"`
+	Log *log.Logger `yaml:"-" json:"-"`
 
 	// The date/time that discoveries must be active since to be included in the findings
-	CollectionStartTime time.Time `yaml:"-"`
+	CollectionStartTime time.Time `yaml:"-" json:"-"`
 
 	// Scope struct that contains ASN, CIDR, Domain, IP, and ports in scope
-	Scope *Scope `yaml:"scope,omitempty"`
+	Scope *Scope `yaml:"scope,omitempty" json:"scope,omitempty"`
 
 	// Defines options like datasources config path and stuff like that
-	Options map[string]interface{} `yaml:"options,omitempty"`
+	Options map[string]interface{} `yaml:"options,omitempty" json:"-"`
 
 	// Filepath of the configuration file. It is needed as a seed incase of relative paths in the config.
-	Filepath string `yaml:"-"`
+	Filepath string `yaml:"-" json:"-"`
 
 	// Alternative directory for scripts provided by the user
-	ScriptsDirectory string `yaml:"-"`
+	ScriptsDirectory string `yaml:"-" json:"-"`
 
 	// The directory that stores the bolt db and other files created
-	Dir string `yaml:"-"`
+	Dir string `yaml:"-" json:"-"`
 
 	// The graph databases used by the system / enumerations
-	GraphDBs []*Database `yaml:"-"`
+	GraphDBs []*Database `yaml:"-" json:"database,omitempty"`
 
 	// The maximum number of concurrent DNS queries
-	MaxDNSQueries int `yaml:"-"`
+	MaxDNSQueries int `yaml:"-" json:"-"`
 
 	// The list of words to use when generating names
-	Wordlist []string `yaml:"-"`
+	Wordlist []string `yaml:"-" json:"wordlists,omitempty"`
 
 	// Will the enumeration including brute forcing techniques
-	BruteForcing bool `yaml:"-"`
+	BruteForcing bool `yaml:"-" json:"brute_force,omitempty"`
 
 	// Will recursive brute forcing be performed?
-	Recursive bool `yaml:"-"`
+	Recursive bool `yaml:"-" json:"-"`
 
 	// Minimum number of subdomain discoveries before performing recursive brute forcing
-	MinForRecursive int `yaml:"-"`
+	MinForRecursive int `yaml:"-" json:"-"`
 
 	// Maximum depth for bruteforcing
-	MaxDepth int `yaml:"-"`
+	MaxDepth int `yaml:"-" json:"-"`
 
 	// Will discovered subdomain name alterations be generated?
-	Alterations    bool     `yaml:"-"`
-	FlipWords      bool     `yaml:"-"`
-	FlipNumbers    bool     `yaml:"-"`
-	AddWords       bool     `yaml:"-"`
-	AddNumbers     bool     `yaml:"-"`
-	MinForWordFlip int      `yaml:"-"`
-	EditDistance   int      `yaml:"-"`
-	AltWordlist    []string `yaml:"-"`
+	Alterations    bool     `yaml:"-" json:"alterations"`
+	FlipWords      bool     `yaml:"-" json:"-"`
+	FlipNumbers    bool     `yaml:"-" json:"-"`
+	AddWords       bool     `yaml:"-" json:"-"`
+	AddNumbers     bool     `yaml:"-" json:"-"`
+	MinForWordFlip int      `yaml:"-" json:"-"`
+	EditDistance   int      `yaml:"-" json:"-"`
+	AltWordlist    []string `yaml:"-" json:"alt_worldlist,omitempty"`
 
 	// Only access the data sources for names and return results?
-	Passive bool `yaml:"-"`
+	Passive bool `yaml:"-" json:"-"`
 
 	// Determines if zone transfers will be attempted
-	Active bool `yaml:"-"`
+	Active bool `yaml:"-" json:"-"`
 
-	blacklistLock sync.Mutex `yaml:"-"`
+	blacklistLock sync.Mutex `yaml:"-" json:"-"`
 
 	// A list of data sources that should not be utilized
 	SourceFilter struct {
-		Include bool     `yaml:"-"` // true = include, false = exclude
-		Sources []string `yaml:"-"`
-	} `yaml:"-"`
+		Include bool     `yaml:"-" json:"include"` // true = include, false = exclude
+		Sources []string `yaml:"-" json:"sources"`
+	} `yaml:"-" json:"source_filter,omitempty"`
 
 	// The minimum number of minutes that data source responses will be reused
-	MinimumTTL int `yaml:"-"`
+	MinimumTTL int `yaml:"-" json:"-"`
 
 	// Type of DNS records to query for
-	RecordTypes []string `yaml:"-"`
+	RecordTypes []string `yaml:"-" json:"-"`
 
 	// Resolver settings
-	Resolvers        []string `yaml:"-"`
-	ResolversQPS     int      `yaml:"-"`
-	TrustedResolvers []string `yaml:"-"`
-	TrustedQPS       int      `yaml:"-"`
+	Resolvers        []string `yaml:"-" json:"resolvers"`
+	ResolversQPS     int      `yaml:"-" json:"-"`
+	TrustedResolvers []string `yaml:"-" json:"trusted_resolvers,omitempty"`
+	TrustedQPS       int      `yaml:"-" json:"-"`
 
 	// Option for verbose logging and output
-	Verbose bool `yaml:"-"`
+	Verbose bool `yaml:"-" json:"-"`
 
 	// Names provided to seed the enumeration
-	ProvidedNames []string `yaml:"-"`
+	ProvidedNames []string `yaml:"-" json:"-"`
 
 	// The regular expressions for the root domains added to the enumeration
-	regexps map[string]*regexp.Regexp `yaml:"-"`
+	regexps map[string]*regexp.Regexp `yaml:"-" json:"-"`
 
 	// Mode should be determined based on scripts utilized
-	Mode string `yaml:"-"`
+	Mode string `yaml:"-" json:"-"`
 
 	// The data source configurations
-	DataSrcConfigs *DataSourceConfig `yaml:"-"`
+	DataSrcConfigs *DataSourceConfig `yaml:"-" json:"-"` // modify the json tag later
 
 	// The Transformations map will contain incoming assets, and what handlers should be called.
-	Transformations map[string]*Transformation `yaml:"Transformations"`
+	Transformations map[string]*Transformation `yaml:"transformations" json:"transformations"`
 
 	// The engine APIURI configuration
-	EngineAPI *EngAPI `yaml:"-"`
+	EngineAPI *EngAPI `yaml:"-" json:"-"`
 }
 
 type Scope struct {
 	// The root domain names that the enumeration will target
-	Domains []string `yaml:"domains,omitempty"`
+	Domains []string `yaml:"domains,omitempty" json:"domains,omitempty"`
 
 	// IP Net.IP
-	Addresses []net.IP `yaml:"-"`
+	Addresses []net.IP `yaml:"-" json:"ip_raw,omitempty"`
 
 	// The IP addresses specified as in scope
-	IP []string `yaml:"ips,omitempty"`
+	IP []string `yaml:"ips,omitempty" json:"ips,omitempty"`
 
 	// ASNs specified as in scope
-	ASNs []int `yaml:"asns,omitempty"`
+	ASNs []int `yaml:"asns,omitempty" json:"asns,omitempty"`
 
 	// CIDR IPNET
-	CIDRs []*net.IPNet `yaml:"-"`
+	CIDRs []*net.IPNet `yaml:"-" json:"cidr_raw,omitempty"`
 
 	// CIDR in scope
-	CIDRStrings []string `yaml:"cidrs,omitempty"`
+	CIDRStrings []string `yaml:"cidrs,omitempty" json:"cidrs,omitempty"`
 
 	// The ports checked for certificates
-	Ports []int `yaml:"ports,omitempty"`
+	Ports []int `yaml:"ports,omitempty" json:"ports,omitempty"`
 
 	// A blacklist of subdomain names that will not be investigated
-	Blacklist []string `yaml:"blacklist,omitempty"`
+	Blacklist []string `yaml:"blacklist,omitempty" json:"blacklist,omitempty"`
 }
 
 // NewConfig returns a default configuration object.
@@ -266,7 +266,7 @@ func (c *Config) LoadSettings(path string) error {
 	// append parseIPs (which is a []net.IP) to c.Scope.IP
 	c.Scope.Addresses = append(c.Scope.Addresses, parseIPs...)
 
-	loads := []func() error{
+	loads := []func(cfg *Config) error{
 		c.loadAlterationSettings,
 		c.loadBruteForceSettings,
 		c.loadDatabaseSettings,
@@ -276,7 +276,7 @@ func (c *Config) LoadSettings(path string) error {
 		c.loadEngineSettings,
 	}
 	for _, load := range loads {
-		if err := load(); err != nil {
+		if err := load(c); err != nil {
 			return err
 		}
 	}

@@ -27,46 +27,42 @@ var malformedMockConfigYAML = []byte(`
 `)
 
 func TestLoadEngineSettings_ValidConfig(t *testing.T) {
-	var c Config
-	c.Options = make(map[string]interface{}) // Initialize the Options map
+	c := NewConfig()
 
 	err := yaml.Unmarshal(validMockConfigYAML, &c)
 	require.NoError(t, err, "Unmarshalling valid YAML should not produce an error")
 
-	err = c.loadEngineSettings()
+	err = c.loadEngineSettings(c)
 	assert.NoError(t, err, "loadEngineSettings should not return an error with valid config")
 	assert.NotNil(t, c.EngineAPI, "EngineAPI should not be nil after loading settings")
 }
 
 func TestLoadEngineSettings_InvalidType(t *testing.T) {
-	var c Config
-	c.Options = make(map[string]interface{}) // Initialize the Options map
+	c := NewConfig()
 
 	err := yaml.Unmarshal(invalidTypeMockConfigYAML, &c)
 	require.NoError(t, err, "Unmarshalling invalid type YAML should not produce an error")
 
-	err = c.loadEngineSettings()
+	err = c.loadEngineSettings(c)
 	assert.Error(t, err, "loadEngineSettings should return an error if 'engine' type is not string")
 	assert.Nil(t, c.EngineAPI, "EngineAPI should be nil when loading settings fails")
 }
 
 func TestLoadEngineSettings_MalformedYAML(t *testing.T) {
-	var c Config
-	c.Options = make(map[string]interface{}) // Initialize the Options map
+	c := NewConfig()
 
 	err := yaml.Unmarshal(malformedMockConfigYAML, &c)
 	assert.Error(t, err, "Unmarshalling malformed YAML should produce an error")
 }
 
 func TestLoadEngineURI_ValidURI(t *testing.T) {
-	var c Config
-	c.Options = make(map[string]interface{}) // Initialize the Options map
+	c := NewConfig()
 
 	err := yaml.Unmarshal(validMockConfigYAML, &c)
 	require.NoError(t, err, "Unmarshalling valid YAML should not produce an error")
 
 	// you should handle the error returned by loadEngineSettings; ignoring it for brevity
-	_ = c.loadEngineSettings()
+	_ = c.loadEngineSettings(c)
 
 	assert.Equal(t, "http", c.EngineAPI.Scheme, "Scheme should be 'http'")
 	assert.Equal(t, "username", c.EngineAPI.Username, "Username should be 'username'")
@@ -78,23 +74,21 @@ func TestLoadEngineURI_ValidURI(t *testing.T) {
 }
 
 func TestLoadEngineURI_InvalidURI(t *testing.T) {
-	var c Config
-	c.Options = make(map[string]interface{}) // Initialize the Options map
+	c := NewConfig()
 
 	// Set 'engine' option to an invalid URI
 	c.Options["engine"] = "http:://invalid-uri"
 
-	err := c.loadEngineSettings()
+	err := c.loadEngineSettings(c)
 	assert.Error(t, err, "loadEngineSettings should return an error for invalid URI")
 }
 
 func TestLoadEngineURI_MissingScheme(t *testing.T) {
-	var c Config
-	c.Options = make(map[string]interface{}) // Initialize the Options map
+	c := NewConfig()
 
 	// Set 'engine' option to a URI missing a scheme
 	c.Options["engine"] = "username:password@hostname:port/path?option1=value1"
 
-	err := c.loadEngineSettings()
+	err := c.loadEngineSettings(c)
 	assert.Error(t, err, "loadEngineSettings should return an error for missing scheme in URI")
 }
