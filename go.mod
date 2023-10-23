@@ -3,7 +3,7 @@ module github.com/owasp-amass/config
 go 1.19
 
 require (
-	github.com/caffix/stringset v0.1.1
+	github.com/caffix/stringset v0.1.2
 	github.com/fatih/color v1.15.0
 	github.com/go-ini/ini v1.67.0
 	github.com/owasp-amass/amass/v4 v4.2.0
@@ -17,7 +17,7 @@ require (
 	github.com/andybalholm/cascadia v1.3.2 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
-	github.com/chromedp/cdproto v0.0.0-20231011050154-1d073bb38998 // indirect
+	github.com/chromedp/cdproto v0.0.0-20231019002500-864b42864d36 // indirect
 	github.com/chromedp/chromedp v0.9.3 // indirect
 	github.com/chromedp/sysutil v1.0.0 // indirect
 	github.com/d4l3k/messagediff v1.2.1 // indirect
