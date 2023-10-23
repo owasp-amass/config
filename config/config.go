@@ -111,9 +111,9 @@ type Config struct {
 
 	// A list of data sources that should not be utilized
 	SourceFilter struct {
-		Include bool     `yaml:"-" json:"include"` // true = include, false = exclude
-		Sources []string `yaml:"-" json:"sources"`
-	} `yaml:"-" json:"source_filter,omitempty"`
+		Include bool     `yaml:"-" json:"-"` // true = include, false = exclude
+		Sources []string `yaml:"-" json:"-"`
+	} `yaml:"-" json:"-"`
 
 	// The minimum number of minutes that data source responses will be reused
 	MinimumTTL int `yaml:"-" json:"-"`
@@ -154,19 +154,19 @@ type Scope struct {
 	Domains []string `yaml:"domains,omitempty" json:"domains,omitempty"`
 
 	// IP Net.IP
-	Addresses []net.IP `yaml:"-" json:"ip_raw,omitempty"`
+	Addresses []net.IP `yaml:"-" json:"ips,omitempty"`
 
 	// The IP addresses specified as in scope
-	IP []string `yaml:"ips,omitempty" json:"ips,omitempty"`
+	IP []string `yaml:"ips,omitempty" json:"-"`
 
 	// ASNs specified as in scope
 	ASNs []int `yaml:"asns,omitempty" json:"asns,omitempty"`
 
 	// CIDR IPNET
-	CIDRs []*net.IPNet `yaml:"-" json:"cidr_raw,omitempty"`
+	CIDRs []*net.IPNet `yaml:"-" json:"cidrs,omitempty"`
 
 	// CIDR in scope
-	CIDRStrings []string `yaml:"cidrs,omitempty" json:"cidrs,omitempty"`
+	CIDRStrings []string `yaml:"cidrs,omitempty" json:"-"`
 
 	// The ports checked for certificates
 	Ports []int `yaml:"ports,omitempty" json:"ports,omitempty"`
