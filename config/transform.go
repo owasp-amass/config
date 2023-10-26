@@ -7,8 +7,8 @@ import (
 
 // Transformation represents an individual transofmration with optional priority & confidence.
 type Transformation struct {
-	From       string   `yaml:"-" json:"From,omitempty"`
-	To         string   `yaml:"-" json:"To,omitempty"`
+	From       string   `yaml:"-" json:"-"`
+	To         string   `yaml:"-" json:"-"`
 	Priority   int      `yaml:"priority,omitempty" json:"priority,omitempty"`
 	Confidence int      `yaml:"confidence,omitempty" json:"confidence,omitempty"`
 	Exclude    []string `yaml:"exclude,omitempty" json:"exclude,omitempty"`
@@ -58,38 +58,83 @@ func (c *Config) loadTransformSettings(cfg *Config) error {
 			return fmt.Errorf("nil transformation for key: %s", key)
 		}
 
-		// Split the key into 'From' and 'To' components, expecting a "->" delimiter.
-		parts := strings.Split(key, "->")
-		if len(parts) != 2 {
-			return fmt.Errorf("invalid key format: %s", key)
+		// Spit the key into 'From' and 'To' components.
+		if err := transformation.Split(key); err != nil {
+			return fmt.Errorf("error when splitting the key: %w", err)
 		}
-
-		// Assign the 'From' and 'To' values to the Transformation struct.
-		transformation.From = parts[0]
-		transformation.To = parts[1]
 
 		// Apply the global confidence if no specific confidence is set for this transformation.
 		if transformation.Confidence == 0 {
 			transformation.Confidence = globalConfidence
 		}
 
-		// Check for a 'none' transformation, which indicates that no further processing is required for this 'From' type.
-		if transformation.To == "none" {
-			// Conflict arises if there's already a valid transformation for this 'From'.
-			if fromWithValid[transformation.From] {
-				return fmt.Errorf("invalid config: 'none' specified after a valid transformation for 'From' type: %s. 'None' should be the only transformation", transformation.From)
-			}
-			fromWithNone[transformation.From] = true
-		} else { // For other valid transformations.
-			// Conflict arises if a 'none' transformation is already registered for this 'From'.
-			if fromWithNone[transformation.From] {
-				return fmt.Errorf("invalid config: valid transformation specified after 'none' for 'From' type: %s. 'None' should be the only transformation", transformation.From)
-			}
-			// Mark this 'From' as having a valid transformation.
-			fromWithValid[transformation.From] = true
+		err := c.ValidateTransform(transformation, fromWithValid, fromWithNone)
+		if err != nil {
+			return err
 		}
 	}
 
 	// If the loop completes with no conflicts, the function returns nil, indicating success.
+	return nil
+}
+
+// Split splits the key into 'From' and 'To' components, expecting a "->" delimiter.
+// Requires a non-nil Transformation pointer and a valid key format. Example: FQDN->IP
+func (t *Transformation) Split(key string) error {
+
+	if t.From != "" && t.To != "" {
+		return nil // Already split
+	}
+
+	// Split the key into 'From' and 'To' components, expecting a "->" delimiter.
+	parts := strings.Split(key, "->")
+	if len(parts) != 2 {
+		return fmt.Errorf("invalid key format: %s", key)
+	}
+
+	// Assign the 'From' and 'To' values to the Transformation struct.
+	t.From = parts[0]
+	t.To = parts[1]
+	return nil
+}
+
+// ValidateTransform checks the validity of a given transformation with respect to
+// previously registered transformations. The function ensures that there are no conflicts
+// between transformations with 'none' (indicating no action) and other valid transformations
+// for the same 'From' type.
+//
+// Parameters:
+// - transform: The Transformation object to be validated.
+// - fromWithValid: A map tracking 'From' types that have at least one valid transformation defined.
+// - fromWithNone: A map tracking 'From' types that have a 'none' transformation indicating no processing.
+//
+// The function works as follows:
+//  1. If the 'To' field of the transformation is 'none', it checks if there are any valid transformations
+//     for the same 'From' type. If such transformations exist, an error is returned.
+//  2. For other valid transformations, it checks if a 'none' transformation is already registered
+//     for the same 'From' type. If such a transformation exists, an error is returned.
+//
+// The function updates the maps fromWithValid and fromWithNone based on the validation results.
+//
+// Returns:
+// - nil if the transformation is valid.
+// - An error if a conflict is detected or the transformation is otherwise invalid.
+func (c *Config) ValidateTransform(transform *Transformation, fromWithValid, fromWithNone map[string]bool) error {
+	// Check for a 'none' transformation, which indicates that no further processing is required for this 'From' type.
+	if transform.To == "none" {
+		// Conflict arises if there's already a valid transformation for this 'From'.
+		if fromWithValid[transform.From] {
+			return fmt.Errorf("invalid config: 'none' specified after a valid transformation for 'From' type: %s. 'None' should be the only transformation", transform.From)
+		}
+		fromWithNone[transform.From] = true
+	} else { // For other valid transformations.
+		// Conflict arises if a 'none' transformation is already registered for this 'From'.
+		if fromWithNone[transform.From] {
+			return fmt.Errorf("invalid config: valid transformation specified after 'none' for 'From' type: %s. 'None' should be the only transformation", transform.From)
+		}
+		// Mark this 'From' as having a valid transformation.
+		fromWithValid[transform.From] = true
+	}
+
 	return nil
 }

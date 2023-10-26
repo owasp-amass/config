@@ -115,17 +115,7 @@ func (c *Config) loadDataSourceSettings(cfg *Config) error {
 		return fmt.Errorf("error unmarshalling datasources YAML: %v", err)
 	}
 
-	// Assign the DataSource name to each Credential's Name field in the Datasource
-	for _, src := range dsConfig.Datasources {
-		if src.Creds == nil {
-			src.Creds = make(map[string]*Credentials)
-		}
-
-		for accountName, creds := range src.Creds {
-			creds.Name = src.Name
-			src.Creds[accountName] = creds
-		}
-	}
+	dsConfig.MapNames()
 
 	// Assign the unmarshalled DataSourceConfig to the Config struct
 	c.DataSrcConfigs = &dsConfig
@@ -139,4 +129,21 @@ func (c *Config) loadDataSourceSettings(cfg *Config) error {
 	}
 
 	return nil
+}
+
+// MapNames assigns the name of the DataSource to each associated Credential's Name field.
+// This is especially useful after unmarshalling data where the relationship between a DataSource and its
+// credentials may not have been explicitly set in the source data.
+func (dsConfig *DataSourceConfig) MapNames() {
+	// Assign the DataSource name to each Credential's Name field in the Datasource
+	for _, src := range dsConfig.Datasources {
+		if src.Creds == nil {
+			src.Creds = make(map[string]*Credentials)
+		}
+
+		for accountName, creds := range src.Creds {
+			creds.Name = src.Name
+			src.Creds[accountName] = creds
+		}
+	}
 }

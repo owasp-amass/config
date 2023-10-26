@@ -140,7 +140,7 @@ type Config struct {
 	Mode string `yaml:"-" json:"-"`
 
 	// The data source configurations
-	DataSrcConfigs *DataSourceConfig `yaml:"-" json:"-"` // modify the json tag later
+	DataSrcConfigs *DataSourceConfig `yaml:"-" json:"datasource_config"`
 
 	// The Transformations map will contain incoming assets, and what handlers should be called.
 	Transformations map[string]*Transformation `yaml:"transformations" json:"transformations"`
