@@ -9,40 +9,52 @@ import (
 // Mock YAML inputs for various test cases
 var validYAML = []byte(`
 options:
-  confidence: 50
+  confidence: 50 # default confidence level for all transformations unless otherwise specified
 
-Transformations:
+transformations:
   FQDN->IP:
     priority: 1
     confidence: 80
   FQDN->WHOIS:
     priority: 2
-  FQDN->TLS: 
-    exclude: true
+  FQDN->ALL: 
+    exclude: [TLS,FQDN]
   IP->IP:
     priority: 1
     confidence: 80
   IP->WHOIS:
     priority: 2
   IP->TLS:
+    # leaving both priority and confidence out
+
 `)
 
 var conflictingYAML = []byte(`
 options:
   confidence: 50
 
-Transformations:
+transformations:
   FQDN->IP:
     priority: 1
+    confidence: 80
   FQDN->none:
     priority: 2
+  FQDN->ALL: 
+    exclude: [TLS,FQDN]
+  IP->IP:
+    priority: 1
+    confidence: 80
+  IP->WHOIS:
+    priority: 2
+  IP->TLS:
+    # leaving both priority and confidence out
 `)
 
 var invalidKeyYAML = []byte(`
 options:
   confidence: 50
 
-Transformations:
+transformations:
   FQDN-IP:
     priority: 1
 `)
@@ -68,6 +80,8 @@ func TestLoadTransformSettings(t *testing.T) {
 		if conf.Transformations["FQDN->WHOIS"].Confidence != 50 {
 			t.Errorf("Expected confidence to be set to global value")
 		}
+		// Add debugging logs
+		t.Logf("Configuration: %v", conf)
 	})
 
 	// Test with conflicting 'none' transformation
@@ -76,6 +90,8 @@ func TestLoadTransformSettings(t *testing.T) {
 		if err == nil {
 			t.Fatalf("Expected error due to conflicting 'none' transformation, got nil")
 		}
+		// Add debugging logs
+		t.Logf("Error: %v", err)
 	})
 
 	// Test with invalid key format in YAML
@@ -84,5 +100,7 @@ func TestLoadTransformSettings(t *testing.T) {
 		if err == nil {
 			t.Fatalf("Expected error due to invalid key format, got nil")
 		}
+		// Add debugging logs
+		t.Logf("Error: %v", err)
 	})
 }
