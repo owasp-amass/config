@@ -77,7 +77,7 @@ type Config struct {
 	MaxDNSQueries int `yaml:"-" json:"-"`
 
 	// The list of words to use when generating names
-	Wordlist []string `yaml:"-" json:"wordlists,omitempty"`
+	Wordlist []string `yaml:"-" json:"wordlist,omitempty"`
 
 	// Will the enumeration including brute forcing techniques
 	BruteForcing bool `yaml:"-" json:"brute_force,omitempty"`
@@ -92,7 +92,7 @@ type Config struct {
 	MaxDepth int `yaml:"-" json:"-"`
 
 	// Will discovered subdomain name alterations be generated?
-	Alterations    bool     `yaml:"-" json:"alterations"`
+	Alterations    bool     `yaml:"-" json:"alterations,omitempty"`
 	FlipWords      bool     `yaml:"-" json:"-"`
 	FlipNumbers    bool     `yaml:"-" json:"-"`
 	AddWords       bool     `yaml:"-" json:"-"`

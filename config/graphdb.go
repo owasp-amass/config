@@ -19,7 +19,7 @@ type Database struct {
 	Password string `json:"password,omitempty"` // Password for authentication
 	Host     string `json:"host,omitempty"`     // Host of the database
 	Port     string `json:"port,omitempty"`     // Port of the database
-	DBName   string `json:"dbName,omitempty"`   // Name of the database
+	DBName   string `json:"db_name,omitempty"`  // Name of the database
 	Options  string `json:"options,omitempty"`  // Extra options used while connecting to the database
 }
 
