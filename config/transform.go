@@ -19,7 +19,7 @@ type Transformation struct {
 
 // Matches represents a collection of transform matches.
 type Matches struct {
-	lock *sync.Mutex
+	lock sync.Mutex
 	to   map[string]struct{}
 }
 
@@ -143,10 +143,10 @@ func (t *Transformation) Validate(c *Config) error {
 }
 
 // CheckTransformations checks if the given 'From' type has a valid transformation to any of the given 'To' types.
-func (c *Config) CheckTransformations(from string, tos ...string) (Matches, error) {
+func (c *Config) CheckTransformations(from string, tos ...string) (*Matches, error) {
 	lower := strings.ToLower(from)
 	tomap := make(map[string]struct{})
-	results := Matches{to: make(map[string]struct{})}
+	results := &Matches{to: make(map[string]struct{})}
 
 	for _, v := range tos {
 		t := strings.ToLower(v)
@@ -174,7 +174,7 @@ func (c *Config) CheckTransformations(from string, tos ...string) (Matches, erro
 	}
 
 	if len(results.to) == 0 {
-		return results, fmt.Errorf("zero transformation matches in the session config")
+		return nil, fmt.Errorf("zero transformation matches in the session config")
 	}
 	return results, nil
 }

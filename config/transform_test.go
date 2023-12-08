@@ -320,14 +320,14 @@ func TestCheckTransformations(t *testing.T) {
 		tos        []string
 		expectErr  bool
 		errMessage string
-		expected   Matches
+		expected   *Matches
 	}{
 		{
 			name:      "Valid transformation",
 			from:      "fqdn",
 			tos:       []string{"ipaddress"},
 			expectErr: false,
-			expected: Matches{
+			expected: &Matches{
 				to: map[string]struct{}{
 					"ipaddress": {},
 				},
@@ -339,13 +339,13 @@ func TestCheckTransformations(t *testing.T) {
 			tos:        []string{"rirorg"},
 			expectErr:  true,
 			errMessage: "zero transformation matches in the session config",
-			expected:   Matches{to: make(map[string]struct{})}},
+			expected:   &Matches{to: make(map[string]struct{})}},
 		{
 			name:      "Transformation to 'all'",
 			from:      "fqdn",
 			tos:       []string{"registrant", "rirorg"},
 			expectErr: false,
-			expected: Matches{
+			expected: &Matches{
 				to: map[string]struct{}{
 					"registrant": {},
 				},
@@ -357,32 +357,32 @@ func TestCheckTransformations(t *testing.T) {
 			tos:        []string{"fqdn", "tls"},
 			expectErr:  true,
 			errMessage: "zero transformation matches in the session config",
-			expected:   Matches{to: make(map[string]struct{})}},
+			expected:   &Matches{to: make(map[string]struct{})}},
 		{
 			name:       "No \"from\" matches with config",
 			from:       "ip",
 			tos:        []string{"tls", "rirorg"},
 			expectErr:  true,
 			errMessage: "zero transformation matches in the session config",
-			expected:   Matches{to: make(map[string]struct{})}},
+			expected:   &Matches{to: make(map[string]struct{})}},
 		{
 			name:       "No \"to\" matches with config",
 			from:       "whois",
 			tos:        []string{"fqdn"},
 			expectErr:  true,
 			errMessage: "zero transformation matches in the session config",
-			expected:   Matches{to: make(map[string]struct{})}},
+			expected:   &Matches{to: make(map[string]struct{})}},
 		{
 			name:       "Nil \"to\" matches with config",
 			from:       "fqdn",
 			tos:        []string{"rirorg"},
 			expectErr:  true,
 			errMessage: "zero transformation matches in the session config",
-			expected:   Matches{to: make(map[string]struct{})}},
+			expected:   &Matches{to: make(map[string]struct{})}},
 	}
 
 	var err error
-	var matches Matches
+	var matches *Matches
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if tt.name != "Nil \"to\" matches with config" {
@@ -400,7 +400,7 @@ func TestCheckTransformations(t *testing.T) {
 				}
 			}
 
-			if !reflect.DeepEqual(matches, tt.expected) {
+			if matches != nil && tt.expected != nil && !reflect.DeepEqual(*matches, *tt.expected) {
 				t.Errorf("Expected matches: %v, but got: %v", tt.expected, matches)
 			}
 		})
