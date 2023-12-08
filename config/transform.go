@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"strings"
+	"sync"
 
 	oam "github.com/owasp-amass/open-asset-model"
 )
@@ -17,7 +18,8 @@ type Transformation struct {
 }
 
 type Matches struct {
-	to map[string]struct{}
+	lock sync.Mutex
+	to   map[string]struct{}
 }
 
 /*
@@ -176,15 +178,11 @@ func (c *Config) CheckTransformations(from string, tos ...string) (Matches, erro
 	return results, nil
 }
 
-/*
-IsMatch checks if a valid transformation to the given 'To' type is present.
-*/
+// IsMatch checks if a valid transformation to the given 'To' type is present.
 func (m *Matches) IsMatch(to string) bool {
-	to = strings.ToLower(to)
+	m.lock.Lock()
+	defer m.lock.Unlock()
 
-	if _, ok := m.to[to]; ok {
-		return true
-	} else {
-		return false
-	}
+	_, found := m.to[strings.ToLower(to)]
+	return found
 }
