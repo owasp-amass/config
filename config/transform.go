@@ -17,6 +17,10 @@ type Transformation struct {
 	Exclude    []string `yaml:"exclude,omitempty" json:"exclude,omitempty"`
 }
 
+type resultTransform struct {
+	to map[string]struct{}
+}
+
 /*
 loadTransformSettings processes the Transformations map from the configuration,
 assigning structured data to each Transformation based on its key.
@@ -24,12 +28,6 @@ Each key is parsed into 'From' and 'To' segments, representing the origin and ta
 of the transformation, respectively, which are then stored in the corresponding Transformation struct.
 */
 func (c *Config) loadTransformSettings(cfg *Config) error {
-	// Map to track 'From' types that have a 'none' transformation, indicating no processing should occur.
-	fromWithNone := make(map[string]bool)
-
-	// Map to track 'From' types that have at least one valid transformation defined.
-	fromWithValid := make(map[string]bool)
-
 	// Retrieve the global confidence from the Options, if it's set.
 	var globalConfidence int
 	if gc, ok := c.Options["confidence"]; ok {
@@ -55,7 +53,7 @@ func (c *Config) loadTransformSettings(cfg *Config) error {
 			transformation.Confidence = globalConfidence
 		}
 
-		err := transformation.Validate(fromWithValid, fromWithNone)
+		err := transformation.Validate(c)
 		if err != nil {
 			return err
 		}
@@ -87,12 +85,18 @@ func (t *Transformation) Split(key string) error {
 }
 
 /*
-ValidateTransform checks the validity of a given transformation with respect to OAM &
+Validate checks the validity of a given transformation with respect to OAM &
 previously registered transformations. The function ensures OAM compliance & that there are no conflicts
 between transformations with 'none' (indicating no action) and other valid transformations
 for the same 'From' type.
 */
-func (t *Transformation) Validate(fromWithValid, fromWithNone map[string]bool) error {
+func (t *Transformation) Validate(c *Config) error {
+	if c.fromWithNone == nil {
+		c.fromWithNone = make(map[string]bool)
+	}
+	if c.fromWithValid == nil {
+		c.fromWithValid = make(map[string]bool)
+	}
 	tfound := false
 	ffound := false
 	// Check if "From" and "To" is OAM compliant
@@ -120,27 +124,30 @@ func (t *Transformation) Validate(fromWithValid, fromWithNone map[string]bool) e
 	// Check for a 'none' transformation, which indicates that no further processing is required for this 'From' type.
 	if t.To == "none" {
 		// Conflict arises if there's already a valid transformation for this 'From'.
-		if fromWithValid[t.From] {
+		if c.fromWithValid[t.From] {
 			return fmt.Errorf("invalid config: 'none' specified after a valid transformation for 'From' type: %s. 'None' should be the only transformation", t.From)
 		}
-		fromWithNone[t.From] = true
+		c.fromWithNone[t.From] = true
 	} else { // For other valid transformations.
 		// Conflict arises if a 'none' transformation is already registered for this 'From'.
-		if fromWithNone[t.From] {
+		if c.fromWithNone[t.From] {
 			return fmt.Errorf("invalid config: valid transformation specified after 'none' for 'From' type: %s. 'None' should be the only transformation", t.From)
 		}
 		// Mark this 'From' as having a valid transformation.
-		fromWithValid[t.From] = true
+		c.fromWithValid[t.From] = true
 	}
 
 	return nil
 }
 
 // CheckTransformations checks if the given 'From' type has a valid transformation to any of the given 'To' types.
-func (c *Config) CheckTransformations(from string, tos ...string) (map[string]struct{}, error) {
+func (c *Config) CheckTransformations(from string, tos ...string) error {
 	lower := strings.ToLower(from)
 	tomap := make(map[string]struct{})
-	results := make(map[string]struct{})
+
+	if c.results == nil {
+		c.results = make(map[string]*resultTransform)
+	}
 
 	for _, v := range tos {
 		t := strings.ToLower(v)
@@ -149,6 +156,10 @@ func (c *Config) CheckTransformations(from string, tos ...string) (map[string]st
 
 	for _, transform := range c.Transformations {
 		if lower == transform.From {
+			// if empty, initialize it
+			if c.results[transform.From] == nil {
+				c.results[transform.From] = &resultTransform{to: make(map[string]struct{})}
+			}
 			if transform.To == "all" {
 				excludes := make(map[string]struct{})
 				for _, e := range transform.Exclude {
@@ -157,18 +168,44 @@ func (c *Config) CheckTransformations(from string, tos ...string) (map[string]st
 
 				for k := range tomap {
 					if _, found := excludes[k]; !found {
-						results[k] = struct{}{}
+						c.results[transform.From].to[k] = struct{}{}
 					}
 				}
 				continue
 			} else if _, found := tomap[transform.To]; found {
-				results[transform.To] = struct{}{}
+				c.results[transform.From].to[transform.To] = struct{}{}
 			}
 		}
 	}
 
-	if len(results) == 0 {
-		return nil, errors.New("zero transformation matches in the session config")
+	if c.results[lower] == nil {
+		return errors.New("no transformation matches in the session config for " + lower + " tp " + strings.Join(tos, ", "))
+	} else if len(c.results[lower].to) == 0 {
+		return errors.New("no transformation matches in the session config for " + lower + " to " + strings.Join(tos, ", "))
 	}
-	return results, nil
+	return nil
+}
+
+/*
+CheckTransformResult checks if the given 'From' type has a valid transformation to the given 'To' type.
+This will only work if CheckTransformations has been called previously.
+*/
+func (c *Config) CheckTransformResult(from, to string) bool {
+	from = strings.ToLower(from)
+	to = strings.ToLower(to)
+
+	// Do not check the results if not initialized, or else a panic will occur.
+	if c.results == nil {
+		return false
+	} else if c.results[from] == nil {
+		return false
+	} else if c.results[from].to == nil {
+		return false
+	}
+
+	if _, ok := c.results[from].to[to]; ok {
+		return true
+	} else {
+		return false
+	}
 }

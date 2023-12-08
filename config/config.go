@@ -147,6 +147,15 @@ type Config struct {
 
 	// The engine APIURI configuration
 	EngineAPI *EngAPI `yaml:"-" json:"-"`
+
+	// Map to track 'From' types that have a 'none' transformation, indicating no processing should occur.
+	fromWithNone map[string]bool
+
+	// Map to track 'From' types that have at least one valid transformation defined.
+	fromWithValid map[string]bool
+
+	// Map used to store possible resulting transforms
+	results map[string]*resultTransform
 }
 
 type Scope struct {

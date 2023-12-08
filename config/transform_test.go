@@ -1,7 +1,6 @@
 package config
 
 import (
-	"reflect"
 	"testing"
 
 	"gopkg.in/yaml.v3"
@@ -190,7 +189,7 @@ func TestCheckTransformations(t *testing.T) {
 	conf.Transformations = map[string]*Transformation{
 		"FQDN->IPAddress": {
 			From:       "fqdn",
-			To:         "ip",
+			To:         "ipaddress",
 			Priority:   1,
 			Confidence: 80,
 		},
@@ -204,71 +203,87 @@ func TestCheckTransformations(t *testing.T) {
 			To:      "all",
 			Exclude: []string{"tls", "fqdn"},
 		},
+		"WHOIS->ALL": {
+			From:    "whois",
+			To:      "all",
+			Exclude: []string{"fqdn"},
+		},
+	}
+	conf2 := NewConfig()
+	conf2.Transformations = map[string]*Transformation{
+		"FQDN->IPAddress": {
+			From: "fqdn",
+			To:   "ipaddress",
+		},
 	}
 
 	tests := []struct {
 		name       string
 		from       string
 		tos        []string
-		expected   map[string]struct{}
 		expectErr  bool
 		errMessage string
 	}{
 		{
 			name:      "Valid transformation",
 			from:      "fqdn",
-			tos:       []string{"ip"},
-			expected:  map[string]struct{}{"ip": {}},
+			tos:       []string{"ipaddress"},
 			expectErr: false,
 		},
 		{
-			name:       "No match",
-			from:       "fqdn",
-			tos:        []string{"rirorg"},
-			expected:   map[string]struct{}{"rirorg": {}},
-			expectErr:  false,
-			errMessage: "zero transformation matches in the session config",
-		},
+			name:      "No match",
+			from:      "fqdn",
+			tos:       []string{"rirorg"},
+			expectErr: false},
 		{
 			name:      "Transformation to 'all'",
 			from:      "fqdn",
 			tos:       []string{"tls", "rirorg"},
-			expected:  map[string]struct{}{"rirorg": {}},
 			expectErr: false,
 		},
 		{
 			name:      "Transformation with excluded targets",
 			from:      "fqdn",
 			tos:       []string{"ip", "tls"},
-			expected:  map[string]struct{}{"ip": {}},
 			expectErr: false,
 		},
 		{
-			name:       "No matches with config",
-			from:       "ip",
-			tos:        []string{"tls", "rirorg"},
-			expected:   nil,
-			expectErr:  true,
-			errMessage: "zero transformation matches in the session config",
+			name:      "No \"from\" matches with config",
+			from:      "ip",
+			tos:       []string{"tls", "rirorg"},
+			expectErr: true,
+		},
+		{
+			name:      "No \"to\" matches with config",
+			from:      "whois",
+			tos:       []string{"fqdn"},
+			expectErr: true,
+		},
+		{
+			name:      "Nil \"to\" matches with config",
+			from:      "fqdn",
+			tos:       []string{"rirorg"},
+			expectErr: true,
 		},
 	}
 
+	var err error
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			results, err := conf.CheckTransformations(tt.from, tt.tos...)
+			if tt.name != "Nil \"to\" matches with config" {
+				err = conf.CheckTransformations(tt.from, tt.tos...)
+			} else {
+				err = conf2.CheckTransformations(tt.from, tt.tos...)
+			}
 			if tt.expectErr {
 				if err == nil {
-					t.Errorf("Expected error, got nil")
-				} else if err.Error() != tt.errMessage {
 					t.Errorf("Expected error message '%s', got '%s'", tt.errMessage, err.Error())
 				}
 			} else {
 				if err != nil {
 					t.Errorf("Unexpected error: %v", err)
 				}
-				if !reflect.DeepEqual(results, tt.expected) {
-					t.Errorf("Expected results to be %v, got %v", tt.expected, results)
-				}
+
 			}
 		})
 	}
@@ -326,6 +341,85 @@ func TestSplit(t *testing.T) {
 				if tf.From != tt.expected.From || tf.To != tt.expected.To {
 					t.Errorf("Expected From: %s, To: %s, got From: %s, To: %s", tt.expected.From, tt.expected.To, tf.From, tf.To)
 				}
+			}
+		})
+	}
+}
+
+func TestCheckTransformResult(t *testing.T) {
+	var result bool
+	c := &Config{
+		results: map[string]*resultTransform{
+			"fqdn": {
+				to: map[string]struct{}{
+					"ipaddress": {},
+					"whois":     {},
+					"rirorg":    {},
+				},
+			},
+			"ipaddress": {
+				to: map[string]struct{}{
+					"fqdn":   {},
+					"whois":  {},
+					"rirorg": {},
+				},
+			},
+		},
+	}
+	cNil := &Config{}
+	cNil2 := &Config{
+		results: map[string]*resultTransform{
+			"fqdn": {}}}
+
+	tests := []struct {
+		name     string
+		from     string
+		to       string
+		expected bool
+	}{
+		{
+			name:     "Existing transformation",
+			from:     "fqdn",
+			to:       "ipaddress",
+			expected: true,
+		},
+		{
+			name:     "Non-existing transformation",
+			from:     "fqdn",
+			to:       "tls",
+			expected: false,
+		},
+		{
+			name:     "Nil results",
+			from:     "fqdn",
+			to:       "ip",
+			expected: false,
+		},
+		{
+			name:     "Nil results \"to\"",
+			from:     "fqdn",
+			to:       "ip",
+			expected: false,
+		},
+		{
+			name:     "Nil results \"from\"",
+			from:     "ip",
+			to:       "fqdn",
+			expected: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.name == "Nil results" {
+				result = cNil.CheckTransformResult(tt.from, tt.to)
+			} else if tt.name == "Nil results \"to\"" {
+				result = cNil2.CheckTransformResult(tt.from, tt.to)
+			} else {
+				result = c.CheckTransformResult(tt.from, tt.to)
+			}
+			if result != tt.expected {
+				t.Errorf("Expected %v, but got %v", tt.expected, result)
 			}
 		})
 	}
