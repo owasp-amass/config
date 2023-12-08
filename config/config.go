@@ -153,9 +153,6 @@ type Config struct {
 
 	// Map to track 'From' types that have at least one valid transformation defined.
 	fromWithValid map[string]bool
-
-	// Map used to store possible resulting transforms
-	results map[string]*resultTransform
 }
 
 type Scope struct {

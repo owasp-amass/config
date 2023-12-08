@@ -1,7 +1,6 @@
 package config
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 
@@ -17,7 +16,7 @@ type Transformation struct {
 	Exclude    []string `yaml:"exclude,omitempty" json:"exclude,omitempty"`
 }
 
-type resultTransform struct {
+type Matches struct {
 	to map[string]struct{}
 }
 
@@ -141,13 +140,10 @@ func (t *Transformation) Validate(c *Config) error {
 }
 
 // CheckTransformations checks if the given 'From' type has a valid transformation to any of the given 'To' types.
-func (c *Config) CheckTransformations(from string, tos ...string) error {
+func (c *Config) CheckTransformations(from string, tos ...string) (Matches, error) {
 	lower := strings.ToLower(from)
 	tomap := make(map[string]struct{})
-
-	if c.results == nil {
-		c.results = make(map[string]*resultTransform)
-	}
+	results := Matches{to: make(map[string]struct{})}
 
 	for _, v := range tos {
 		t := strings.ToLower(v)
@@ -156,10 +152,6 @@ func (c *Config) CheckTransformations(from string, tos ...string) error {
 
 	for _, transform := range c.Transformations {
 		if lower == transform.From {
-			// if empty, initialize it
-			if c.results[transform.From] == nil {
-				c.results[transform.From] = &resultTransform{to: make(map[string]struct{})}
-			}
 			if transform.To == "all" {
 				excludes := make(map[string]struct{})
 				for _, e := range transform.Exclude {
@@ -168,42 +160,29 @@ func (c *Config) CheckTransformations(from string, tos ...string) error {
 
 				for k := range tomap {
 					if _, found := excludes[k]; !found {
-						c.results[transform.From].to[k] = struct{}{}
+						results.to[k] = struct{}{}
 					}
 				}
 				continue
 			} else if _, found := tomap[transform.To]; found {
-				c.results[transform.From].to[transform.To] = struct{}{}
+				results.to[transform.To] = struct{}{}
 			}
 		}
 	}
 
-	if c.results[lower] == nil {
-		return errors.New("no transformation matches in the session config for " + lower + " tp " + strings.Join(tos, ", "))
-	} else if len(c.results[lower].to) == 0 {
-		return errors.New("no transformation matches in the session config for " + lower + " to " + strings.Join(tos, ", "))
+	if len(results.to) == 0 {
+		return results, fmt.Errorf("zero transformation matches in the session config")
 	}
-	return nil
+	return results, nil
 }
 
 /*
-CheckTransformResult checks if the given 'From' type has a valid transformation to the given 'To' type.
-This will only work if CheckTransformations has been called previously.
+IsMatch checks if a valid transformation to the given 'To' type is present.
 */
-func (c *Config) CheckTransformResult(from, to string) bool {
-	from = strings.ToLower(from)
+func (m *Matches) IsMatch(to string) bool {
 	to = strings.ToLower(to)
 
-	// Do not check the results if not initialized, or else a panic will occur.
-	if c.results == nil {
-		return false
-	} else if c.results[from] == nil {
-		return false
-	} else if c.results[from].to == nil {
-		return false
-	}
-
-	if _, ok := c.results[from].to[to]; ok {
+	if _, ok := m.to[to]; ok {
 		return true
 	} else {
 		return false
