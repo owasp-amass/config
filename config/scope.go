@@ -170,6 +170,7 @@ func (c *Config) Blacklisted(name string) bool {
 	return false
 }
 
+// ParseIPs represents a slice of net.IP addresses.
 type ParseIPs []net.IP
 
 func (p *ParseIPs) String() string {

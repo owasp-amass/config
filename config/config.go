@@ -155,6 +155,7 @@ type Config struct {
 	fromWithValid map[string]bool
 }
 
+// Scope represents the configuration for the enumeration scope.
 type Scope struct {
 	// The root domain names that the enumeration will target
 	Domains []string `yaml:"domains,omitempty" json:"domains,omitempty"`
@@ -290,7 +291,7 @@ func (c *Config) LoadSettings(path string) error {
 	return nil
 }
 
-// Creates a file path that is relative the the configuration file location.
+// AbsPathFromConfigDir Creates a file path that is relative the the configuration file location.
 // If the path is already absolute, return it as is.
 func (c *Config) AbsPathFromConfigDir(path string) (string, error) {
 	// If the path is already absolute, return it as is

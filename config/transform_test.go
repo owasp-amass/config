@@ -130,8 +130,6 @@ func TestLoadTransformSettings(t *testing.T) {
 		if conf.Transformations["FQDN->WHOIS"].Confidence != 50 {
 			t.Errorf("Expected confidence to be set to global value")
 		}
-		// Add debugging logs
-		t.Logf("Configuration: %v", conf)
 	})
 
 	// Test with conflicting 'none' transformation
@@ -140,8 +138,6 @@ func TestLoadTransformSettings(t *testing.T) {
 		if err == nil {
 			t.Fatalf("Expected error due to conflicting 'none' transformation, got nil")
 		}
-		// Add debugging logs
-		t.Logf("Error: %v", err)
 	})
 
 	// Test with conflicting 'none' transformation
@@ -150,8 +146,6 @@ func TestLoadTransformSettings(t *testing.T) {
 		if err == nil {
 			t.Fatalf("Expected error due to conflicting 'none' transformation, got nil")
 		}
-		// Add debugging logs
-		t.Logf("Error: %v", err)
 	})
 
 	// Test with invalid key format in YAML
@@ -160,8 +154,6 @@ func TestLoadTransformSettings(t *testing.T) {
 		if err == nil {
 			t.Fatalf("Expected error due to invalid key format, got nil")
 		}
-		// Add debugging logs
-		t.Logf("Error: %v", err)
 	})
 
 	// Test with non-OAM compliant 'to' transformation
@@ -170,8 +162,6 @@ func TestLoadTransformSettings(t *testing.T) {
 		if err == nil {
 			t.Fatalf("Expected error due to non-OAM compliant 'to' transformation, got nil")
 		}
-		// Add debugging logs
-		t.Logf("Error: %v", err)
 	})
 
 	// Test with non-OAM compliant 'from' transformation
@@ -180,10 +170,7 @@ func TestLoadTransformSettings(t *testing.T) {
 		if err == nil {
 			t.Fatalf("Expected error due to non-OAM compliant 'from' transformation, got nil")
 		}
-		// Add debugging logs
-		t.Logf("Error: %v", err)
 	})
-
 }
 
 func TestSplit(t *testing.T) {

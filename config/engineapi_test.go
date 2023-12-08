@@ -63,14 +63,6 @@ func TestLoadEngineURI_ValidURI(t *testing.T) {
 	// you should handle the error returned by loadEngineSettings; ignoring it for brevity
 	_ = c.loadEngineSettings(c)
 
-	t.Logf("Scheme: %s", c.EngineAPI.Scheme)
-	t.Logf("Username: %s", c.EngineAPI.Username)
-	t.Logf("Password: %s", c.EngineAPI.Password)
-	t.Logf("Host: %s", c.EngineAPI.Host)
-	t.Logf("Port: %s", c.EngineAPI.Port)
-	t.Logf("Path: %s", c.EngineAPI.Path)
-	t.Logf("Options: %s", c.EngineAPI.Options)
-
 	assert.Equal(t, "http", c.EngineAPI.Scheme, "Scheme should be 'http'")
 	assert.Equal(t, "username", c.EngineAPI.Username, "Username should be 'username'")
 	assert.Equal(t, "password", c.EngineAPI.Password, "Password should be 'password'")

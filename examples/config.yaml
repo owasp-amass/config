@@ -41,17 +41,17 @@ options:
   confidence: 50 # default confidence level for all transformations unless otherwise specified
 
 transformations:
-  FQDN->IP:
+  FQDN->IPAddress:
     priority: 1
     confidence: 80
   FQDN->WHOIS:
     priority: 2
   FQDN->ALL: 
     exclude: [TLS,FQDN]
-  IP->IP:
+  IPAddress->FQDN:
     priority: 1
     confidence: 80
-  IP->WHOIS:
+  IPAddress->WHOIS:
     priority: 2
-  IP->TLS:
+  IPAddress->Netblock:
     # leaving both priority and confidence out

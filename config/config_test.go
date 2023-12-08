@@ -90,12 +90,10 @@ func TestIsAddressInScope(t *testing.T) {
 
 	// Example string to use to convert the appropriate data type and populate c.Scope.IP
 	example := "192.0.2.1"
-	fmt.Println()
 	_ = ipNet.parseRange(example)
 	c.Scope.Addresses = ipNet
 
 	c.Scope.IP = append(c.Scope.IP, string(c.Scope.Addresses[0]))
-	fmt.Println(c.Scope.Addresses)
 	if !c.IsAddressInScope(example) {
 		t.Errorf("Failed to find address %v in scope.\nAddress List:%v", example, c.Scope.Addresses)
 	}

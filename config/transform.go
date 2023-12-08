@@ -17,8 +17,9 @@ type Transformation struct {
 	Exclude    []string `yaml:"exclude,omitempty" json:"exclude,omitempty"`
 }
 
+// Matches represents a collection of transform matches.
 type Matches struct {
-	lock sync.Mutex
+	lock *sync.Mutex
 	to   map[string]struct{}
 }
 

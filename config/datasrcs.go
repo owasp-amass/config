@@ -12,7 +12,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// DataSourceConfig contains the configurations specific to a data source.
+// DataSource contains the configurations specific to a data source.
 type DataSource struct {
 	Name  string                  `yaml:"name,omitempty" json:"name,omitempty"`
 	TTL   int                     `yaml:"ttl,omitempty" json:"ttl,omitempty"`
@@ -28,6 +28,7 @@ type Credentials struct {
 	Secret   string `yaml:"secret,omitempty" json:"secret,omitempty"`
 }
 
+// DataSourceConfig contains the configuration for multiple data sources.
 type DataSourceConfig struct {
 	Datasources   []*DataSource  `yaml:"datasources,omitempty" json:"datasources,omitempty"`
 	GlobalOptions map[string]int `yaml:"global_options,omitempty" json:"global_options,omitempty"`
@@ -134,9 +135,9 @@ func (c *Config) loadDataSourceSettings(cfg *Config) error {
 // MapNames assigns the name of the DataSource to each associated Credential's Name field.
 // This is especially useful after unmarshalling data where the relationship between a DataSource and its
 // credentials may not have been explicitly set in the source data.
-func (dsConfig *DataSourceConfig) MapNames() {
+func (dsc *DataSourceConfig) MapNames() {
 	// Assign the DataSource name to each Credential's Name field in the Datasource
-	for _, src := range dsConfig.Datasources {
+	for _, src := range dsc.Datasources {
 		if src.Creds == nil {
 			src.Creds = make(map[string]*Credentials)
 		}
