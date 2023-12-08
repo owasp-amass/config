@@ -187,3 +187,15 @@ func (m *Matches) IsMatch(to string) bool {
 	_, found := m.to[strings.ToLower(to)]
 	return found
 }
+
+// Len returns the number of matches in the result set.
+func (m *Matches) Len() int {
+	m.lock.Lock()
+	defer m.lock.Unlock()
+
+	var num int
+	for range m.to {
+		num++
+	}
+	return num
+}
