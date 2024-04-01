@@ -57,38 +57,6 @@ func (c *Config) loadDatabaseSettings(cfg *Config) error {
 	return nil
 }
 
-// func (c *Config) LoadDatabaseEnvSettings() error {
-// 	dbURI := ""
-// 	if u, set := os.LookupEnv(amassUser); set {
-// 		u = u + "@"
-// 		p := ""
-// 		if penv, set := os.LookupEnv(amassPass); set {
-// 			p = ":" + penv + "@"
-// 		}
-// 		db := "localhost"
-// 		if dbEnv, set := os.LookupEnv(assetDB); set {
-// 			db = dbEnv
-// 		}
-// 		port := "5432"
-// 		if pEnv, set := os.LookupEnv(assetPort); set {
-// 			port = pEnv
-// 		}
-// 		n := "assetdb"
-// 		if nEnv, set := os.LookupEnv(assetDBName); set {
-// 			n = nEnv
-// 		}
-// 		if p != "" {
-// 			u = u[:len(u)-1]
-// 		}
-// 		dbURI = "postgres://" + u + p + db + ":" + port + "/" + n
-// 	}
-// 	if dbURI == "" {
-// 		return fmt.Errorf("no database URI found in environment variables")
-// 	}
-
-// 	return c.loadDatabase(dbURI)
-// }
-
 func (c *Config) LoadDatabaseEnvSettings() error {
 	dbURI := ""
 	if p, set := os.LookupEnv(amassPass); set {
