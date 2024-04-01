@@ -1,6 +1,7 @@
 package config
 
 import (
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -90,4 +91,43 @@ func TestLoadEngineURI_MissingScheme(t *testing.T) {
 
 	err := c.loadEngineSettings(c)
 	assert.Error(t, err, "loadEngineSettings should return an error for missing scheme in URI")
+}
+func TestLoadEngineEnvSettings_ValidEnvSettings(t *testing.T) {
+	c := NewConfig()
+
+	// Set the required environment variables
+	os.Setenv(engineHost, "127.0.0.1")
+	os.Setenv(engineUser, "username")
+	os.Setenv(enginePass, "password")
+	os.Setenv(engineScheme, "http")
+	os.Setenv(enginePort, "80")
+	os.Setenv(enginePath, "path")
+
+	err := c.LoadEngineEnvSettings()
+	assert.NoError(t, err, "LoadEngineEnvSettings should not return an error with valid environment settings")
+	assert.NotNil(t, c.EngineAPI, "EngineAPI should not be nil after loading environment settings")
+
+	// Verify the loaded EngineAPI values
+	assert.Equal(t, "http", c.EngineAPI.Scheme, "Scheme should be 'http'")
+	assert.Equal(t, "username", c.EngineAPI.Username, "Username should be 'username'")
+	assert.Equal(t, "password", c.EngineAPI.Password, "Password should be 'password'")
+	assert.Equal(t, "127.0.0.1", c.EngineAPI.Host, "Host should be '127.0.0.1'")
+	assert.Equal(t, "80", c.EngineAPI.Port, "Port should be '80'")
+	assert.Equal(t, "path", c.EngineAPI.Path, "Path should be 'path'")
+}
+
+func TestLoadEngineEnvSettings_MissingEnvSettings(t *testing.T) {
+	c := NewConfig()
+
+	// Unset the required environment variables
+	os.Unsetenv(engineHost)
+	os.Unsetenv(engineUser)
+	os.Unsetenv(enginePass)
+	os.Unsetenv(engineScheme)
+	os.Unsetenv(enginePort)
+	os.Unsetenv(enginePath)
+
+	err := c.LoadEngineEnvSettings()
+	assert.Error(t, err, "LoadEngineEnvSettings should return an error with missing environment settings")
+	assert.Nil(t, c.EngineAPI, "EngineAPI should be nil if environment settings are missing")
 }

@@ -7,6 +7,7 @@ package config
 import (
 	"fmt"
 	"net/url"
+	"os"
 	"strings"
 )
 
@@ -24,6 +25,15 @@ type EngAPI struct {
 	Options  string // Extra options used while connecting to the Engine API
 }
 
+const (
+	engineUser   = "AMASS_ENGINE_USER"
+	enginePass   = "AMASS_ENGINE_PASSWORD"
+	engineHost   = "AMASS_ENGINE_HOST"
+	enginePort   = "AMASS_ENGINE_PORT"
+	enginePath   = "AMASS_ENGINE_PATH"
+	engineScheme = "AMASS_ENGINE_SCHEME"
+)
+
 // loadEngineSettings is responsible for extracting the "engine" URL from the application's configuration
 // and initializing the EngAPI structure. It performs several checks such as ensuring the configuration options
 // are initialized and the "engine" key is present and of type string. If any of these checks fail, an error is returned.
@@ -35,8 +45,8 @@ func (c *Config) loadEngineSettings(cfg *Config) error {
 
 	// Attempt to retrieve the "engine" value from the configuration options.
 	apiURIInterface, ok := c.Options["engine"]
-	// If the "engine" key does not exist within the options, return with no error as it's an optional field.
 	if !ok {
+		c.LoadEngineEnvSettings()
 		return nil
 	}
 	// Assert that the "engine" option is of type string; if not, return an error specifying the incorrect type received.
@@ -50,6 +60,52 @@ func (c *Config) loadEngineSettings(cfg *Config) error {
 	if err := c.loadEngineURI(apiURI); err != nil {
 		return err
 	}
+
+	return nil
+}
+
+func (c *Config) LoadEngineEnvSettings() error {
+
+	apiURI := ""
+	eng := &EngAPI{}
+
+	h := "localhost"
+	if henv, set := os.LookupEnv(engineHost); set {
+		h = henv
+	}
+	eng.Host = h
+	u := ""
+	if uEnv, set := os.LookupEnv(engineUser); set {
+		eng.Username = uEnv
+		u = uEnv + "@"
+	}
+	p := ""
+	if penv, set := os.LookupEnv(enginePass); set {
+		eng.Password = penv
+		p = ":" + penv + "@"
+	}
+	scheme := "http"
+	if s, set := os.LookupEnv(engineScheme); set {
+		scheme = s
+	}
+	eng.Scheme = scheme
+	port := "4000"
+	if pEnv, set := os.LookupEnv(enginePort); set {
+		port = pEnv
+	}
+	eng.Port = port
+	path := "graphql"
+	if pEnv, set := os.LookupEnv(enginePath); set {
+		path = pEnv
+	}
+	eng.Path = path
+	if p != "" {
+		u = u[:len(u)-1]
+	}
+	apiURI = scheme + "://" + u + p + h + ":" + port + "/" + path
+	eng.URL = apiURI
+
+	c.EngineAPI = eng
 
 	return nil
 }

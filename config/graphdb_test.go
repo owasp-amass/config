@@ -5,6 +5,7 @@
 package config
 
 import (
+	"os"
 	"testing"
 )
 
@@ -99,4 +100,58 @@ func TestLocalDatabaseSettings(t *testing.T) {
 	if localDB.Primary != false {
 		t.Errorf("Expected localDB.Primary to be false when a primary database is in the slice, got true")
 	}
+}
+func TestLoadDatabaseEnvSettings(t *testing.T) {
+	c := NewConfig()
+
+	// Scenario 1: Test with valid environment variables
+	os.Setenv(amassUser, "the_inceptions")
+	os.Setenv(amassPass, "was_here")
+	os.Setenv(assetDB, "192.168.24.14")
+	os.Setenv(assetPort, "5432")
+	os.Setenv(assetDBName, "inceptionsdb")
+
+	err := c.LoadDatabaseEnvSettings()
+	if err != nil {
+		t.Errorf("Got an error when valid environment variables are set, expected nil. Error: %v", err)
+	}
+
+	expectedDBURI := "postgres://the_inceptions:was_here@192.168.24.14:5432/inceptionsdb"
+	if c.GraphDBs[0].URL != expectedDBURI {
+		t.Errorf("Expected DB URI to be %s, got %s", expectedDBURI, c.GraphDBs[0].URL)
+	}
+
+	// Clean up environment variables
+	os.Unsetenv(amassUser)
+	os.Unsetenv(amassPass)
+	os.Unsetenv(assetDB)
+	os.Unsetenv(assetPort)
+	os.Unsetenv(assetDBName)
+
+	// // Scenario 2: Test with just the user environment variables
+	os.Setenv(amassUser, "the_inceptions")
+	err = c.LoadDatabaseEnvSettings()
+	if err != nil {
+		t.Errorf("Got an error when only the user environment variable is set, expected nil. Error: %v", err)
+	}
+
+	expectedDBURI = "postgres://the_inceptions@localhost:5432/assetdb"
+	if c.GraphDBs[1].URL != expectedDBURI {
+		t.Errorf("Expected DB URI to be %s, got %s", expectedDBURI, c.GraphDBs[0].URL)
+	}
+
+	// Clean up environment variables
+	os.Unsetenv(amassUser)
+
+	// // Scenario 3: Test with no environment variables
+	err = c.LoadDatabaseEnvSettings()
+	if err == nil {
+		t.Errorf("Expected an error when no environment variables are set, got nil")
+	}
+
+	// func(graphDBs []*Database) {
+	// 	for _, db := range graphDBs {
+	// 		fmt.Println(db)
+	// 	}
+	// }(c.GraphDBs)
 }
