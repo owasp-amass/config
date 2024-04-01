@@ -434,22 +434,6 @@ func getWordList(reader io.Reader) ([]string, error) {
 	return stringset.Deduplicate(words), nil
 }
 
-// func (c *Config) MarshalJSON() ([]byte, error) {
-// 	type Alias Config
-// 	b, err := json.Marshal(&struct{ *Alias }{Alias: (*Alias)(c)})
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	// Replace escaped characters
-// 	s := string(b)
-// 	s = strings.Replace(s, "\\u0026", "&", -1) // Replace escaped &
-// 	s = strings.Replace(s, "\\u003c", "<", -1) // Replace escaped <
-// 	s = strings.Replace(s, "\\u003e", ">", -1) // Replace escaped >
-
-// 	return []byte(s), nil
-
-// }
-
 func (c *Config) JSON() ([]byte, error) {
 	type Alias Config
 	buffer := &bytes.Buffer{}
