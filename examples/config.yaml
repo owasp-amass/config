@@ -1,6 +1,20 @@
 # The scope objects can be used as seed data and obviously values to determine the scope of the engine.
 # The options are items that I believe we can implement as well (Obviously not now but later in the future)
 
+seed:
+  domains: # domain names to be used as seed data
+    - seed.com
+  ips: # IP addresses to be used as seed data
+    - 10.1.2.45
+    - 10.1.2.46-50
+    - 10.1.2.50-10.1.2.65
+  asns: # ASNs that are to be used as seed data
+    - 2468
+  cidrs: # CIDR ranges that are to be used as seed data
+    - 123.2.3.0/24
+  ports: # ports to be used when actively reaching a service
+    - 8080
+    - 8443
 scope:
   domains: # domain names to be in scope
     - example.com

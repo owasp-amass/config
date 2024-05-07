@@ -57,6 +57,9 @@ type Config struct {
 	// The date/time that discoveries must be active since to be included in the findings
 	CollectionStartTime time.Time `yaml:"-" json:"-"`
 
+	// Seed struct that contains the provided names and CIDRs
+	Seed *Scope `yaml:"seed,omitempty" json:"seed,omitempty"`
+
 	// Scope struct that contains ASN, CIDR, Domain, IP, and ports in scope
 	Scope *Scope `yaml:"scope,omitempty" json:"scope,omitempty"`
 
@@ -191,6 +194,7 @@ func NewConfig() *Config {
 		Rand:                rand.New(rand.NewSource(time.Now().UTC().UnixNano())),
 		Log:                 log.New(io.Discard, "", 0),
 		CollectionStartTime: time.Now(),
+		Seed:                &Scope{},
 		Scope:               &Scope{Ports: []int{80, 443}},
 		Options:             make(map[string]interface{}),
 		MinForRecursive:     1,
@@ -267,21 +271,9 @@ func (c *Config) LoadSettings(path string) error {
 		return fmt.Errorf("error mapping configuration settings to internal values: %v", err)
 	}
 
-	// Convert string CIDRs to net.IP and net.IPNet
-	c.Scope.CIDRs = c.Scope.toCIDRs(c.Scope.CIDRStrings)
+	// Load the settings from the environment
+	c.loadSeedandScopeSettings()
 
-	parseIPs := ParseIPs{} // Create a new ParseIPs, which is a []net.IP under the hood
-	// Validate IP ranges in c.Scope.IP
-	for _, ipRange := range c.Scope.IP {
-		if err := parseIPs.parseRange(ipRange); err != nil {
-			return err
-		}
-	}
-
-	// append parseIPs (which is a []net.IP) to c.Scope.IP
-	c.Scope.Addresses = append(c.Scope.Addresses, parseIPs...)
-
-	fmt.Println("loading other settings")
 	loads := []func(cfg *Config) error{
 		c.loadAlterationSettings,
 		c.loadBruteForceSettings,

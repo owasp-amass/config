@@ -38,7 +38,6 @@ func (c *Config) loadDatabaseSettings(cfg *Config) error {
 	}
 
 	dbURIInterface, ok := c.Options["database"]
-	fmt.Println("loading database settings")
 	if !ok {
 		fmt.Println("loading env settings")
 		c.LoadDatabaseEnvSettings()
