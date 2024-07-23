@@ -7,6 +7,7 @@ package config
 import (
 	"fmt"
 	"net/url"
+	"os"
 	"strings"
 )
 
@@ -23,6 +24,14 @@ type Database struct {
 	Options  string `json:"options,omitempty"`  // Extra options used while connecting to the database
 }
 
+const (
+	amassUser   = "AMASS_DB_USER"
+	amassPass   = "AMASS_DB_PASSWORD"
+	assetDB     = "AMASS_DB_HOST"
+	assetPort   = "AMASS_DB_PORT"
+	assetDBName = "AMASS_DB_NAME"
+)
+
 func (c *Config) loadDatabaseSettings(cfg *Config) error {
 	if c.Options == nil {
 		return fmt.Errorf("config options are not initialized")
@@ -30,6 +39,8 @@ func (c *Config) loadDatabaseSettings(cfg *Config) error {
 
 	dbURIInterface, ok := c.Options["database"]
 	if !ok {
+		fmt.Println("loading env settings")
+		c.LoadDatabaseEnvSettings()
 		return nil
 	}
 
@@ -43,6 +54,48 @@ func (c *Config) loadDatabaseSettings(cfg *Config) error {
 	}
 
 	return nil
+}
+
+func (c *Config) LoadDatabaseEnvSettings() error {
+	dbURI := ""
+	if p, set := os.LookupEnv(amassPass); set {
+		db := &Database{
+			Primary:  true,
+			System:   "postgres",
+			Password: p,
+		}
+		u := "amass"
+		if uenv, set := os.LookupEnv(amassUser); set {
+			u = uenv
+		}
+		db.Username = u
+		h := "localhost"
+		if dbEnv, set := os.LookupEnv(assetDB); set {
+			h = dbEnv
+		}
+		db.Host = h
+		port := "5432"
+		if pEnv, set := os.LookupEnv(assetPort); set {
+			port = pEnv
+		}
+		db.Port = port
+		n := "assetdb"
+		if nEnv, set := os.LookupEnv(assetDBName); set {
+			n = nEnv
+		}
+		db.DBName = n
+		if p != "" {
+			u = u[:len(u)-1]
+		}
+		dbURI = "postgres://" + u + "@" + p + h + ":" + port + "/" + n
+		db.URL = dbURI
+		if c.GraphDBs == nil {
+			c.GraphDBs = make([]*Database, 0)
+		}
+		c.GraphDBs = append(c.GraphDBs, db)
+		return nil
+	}
+	return fmt.Errorf("no database URI found in environment variables")
 }
 
 func (c *Config) loadDatabase(dbURI string) error {

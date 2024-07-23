@@ -16,6 +16,96 @@ import (
 	"github.com/owasp-amass/amass/v4/net/dns"
 )
 
+func (c *Config) loadSeedandScopeSettings() error {
+
+	if c.Seed == nil || c.Seed.isScopeEmpty(false) {
+		if c.Scope == nil {
+			return fmt.Errorf("config seed and scope are not initialized")
+		} else {
+			if err := c.Scope.populate(); err != nil {
+				return err
+			}
+			c.Seed = c.Scope
+		}
+	} else if err := c.Seed.populate(); err != nil {
+		return err
+	}
+
+	if c.Scope == nil || !c.Scope.isScopeEmpty(true) {
+		if err := c.Seed.populate(); err != nil {
+			return err
+		}
+		c.Scope = c.Seed
+		c.Scope.Ports = []int{80, 443}
+	} else if err := c.Scope.populate(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *Scope) isScopeEmpty(scopeSwitch bool) bool {
+	isEmpty := true
+
+	if len(s.Domains) > 0 {
+		isEmpty = false
+	}
+	if len(s.Addresses) > 0 {
+		isEmpty = false
+	}
+	if len(s.CIDRs) > 0 {
+		isEmpty = false
+	}
+	if len(s.ASNs) > 0 {
+		isEmpty = false
+	}
+	if len(s.IP) > 0 {
+		isEmpty = false
+	}
+	if scopeSwitch && !portCheck(s.Ports) {
+		isEmpty = false
+	} else if len(s.Ports) > 0 {
+		isEmpty = false
+	}
+	if len(s.Blacklist) > 0 {
+		isEmpty = false
+	}
+
+	return isEmpty
+}
+
+func (s *Scope) populate() error {
+
+	// Convert string CIDRs to net.IP and net.IPNet
+	s.CIDRs = s.toCIDRs(s.CIDRStrings)
+
+	parseIPs := ParseIPs{} // Create a new ParseIPs, which is a []net.IP under the hood
+	// Validate IP ranges in c.Scope.IP
+	for _, ipRange := range s.IP {
+		if err := parseIPs.parseRange(ipRange); err != nil {
+			return err
+		}
+	}
+
+	// append parseIPs (which is a []net.IP) to c.Scope.IP
+	s.Addresses = append(s.Addresses, parseIPs...)
+
+	return nil
+}
+
+func portCheck(ports []int) bool {
+	defaultPorts := []int{80, 443}
+	if len(ports) != len(defaultPorts) {
+		return true
+	}
+	for i, v := range ports {
+		if v != defaultPorts[i] {
+			return true
+		}
+	}
+	return false
+}
+
 // DomainRegex returns the Regexp object for the domain name identified by the parameter.
 func (c *Config) DomainRegex(domain string) *regexp.Regexp {
 	c.Lock()
