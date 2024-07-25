@@ -5,7 +5,6 @@
 package config
 
 import (
-	"fmt"
 	"path/filepath"
 	"reflect"
 	"sort"
@@ -124,8 +123,7 @@ func TestLoadSettings(t *testing.T) {
 
 	err = c.LoadSettings(path)
 	if err != nil {
-		t.Errorf("Config file failed to load.")
-		fmt.Println(err)
+		t.Errorf("Config file failed to load: %v", err)
 	}
 }
 
@@ -193,7 +191,8 @@ func TestMarshalJSON(t *testing.T) {
 
 	// Test case 1: MarshalJSON returns the expected JSON bytes
 	t.Run("MarshalJSON returns the expected JSON bytes", func(t *testing.T) {
-		expected := []byte(`{"scope":{"ports":[80,443]},"resolvers":null,"datasource_config":{},"transformations":{}}`)
+		expected := []byte(`{"seed":{},"scope":{"ports":[80,443]},"resolvers":null,"datasource_config":{},"transformations":{}}
+`)
 		got, err := c.JSON()
 		if err != nil {
 			t.Errorf("Unexpected error: %v", err)
@@ -211,12 +210,14 @@ func TestMarshalJSON(t *testing.T) {
 	}
 	// Test case 2: MarshalJSON unescapes HTML entities in the JSON bytes
 	t.Run("MarshalJSON unescapes HTML entities in the JSON bytes", func(t *testing.T) {
-		expected := []byte(`{"scope":{"ports":[80,443]},"database":[{"system":"postgres","primary":true,"url":"postgres://postgres:testPasWORD123456!)*&*$@localhost:5432","username":"postgres","password":"testPasWORD123456!)*&*$","host":"localhost","port":"5432"}],"resolvers":null,"datasource_config":{},"transformations":{}}`)
+		expected := []byte(`{"seed":{},"scope":{"ports":[80,443]},"database":[{"system":"postgres","primary":true,"url":"postgres://postgres:testPasWORD123456!)*&*$@localhost:5432","username":"postgres","password":"testPasWORD123456!)*&*$","host":"localhost","port":"5432"}],"resolvers":null,"datasource_config":{},"transformations":{}}
+`)
 		expectedString := string(expected)
 		got, err := c.JSON()
 		if err != nil {
 			t.Errorf("Unexpected error: %v", err)
 		}
+
 		gotString := string(got)
 		if !reflect.DeepEqual(got, expected) {
 			t.Errorf("Unexpected JSON bytes.\nExpected: %s\nGot: %s", expected, got)

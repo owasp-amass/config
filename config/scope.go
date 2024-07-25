@@ -26,6 +26,7 @@ func (c *Config) loadSeedandScopeSettings() error {
 				return err
 			}
 			c.Seed = c.Scope
+			return nil
 		}
 	} else if err := c.Seed.populate(); err != nil {
 		return err
@@ -37,6 +38,7 @@ func (c *Config) loadSeedandScopeSettings() error {
 		}
 		c.Scope = c.Seed
 		c.Scope.Ports = []int{80, 443}
+		return nil
 	} else if err := c.Scope.populate(); err != nil {
 		return err
 	}
@@ -62,7 +64,7 @@ func (s *Scope) isScopeEmpty(scopeSwitch bool) bool {
 	if len(s.IP) > 0 {
 		isEmpty = false
 	}
-	if scopeSwitch && !portCheck(s.Ports) {
+	if scopeSwitch && portCheck(s.Ports) {
 		isEmpty = false
 	} else if len(s.Ports) > 0 {
 		isEmpty = false
@@ -93,17 +95,18 @@ func (s *Scope) populate() error {
 	return nil
 }
 
+// returns true is ports match default ports (80,443), otherwise return false
 func portCheck(ports []int) bool {
 	defaultPorts := []int{80, 443}
 	if len(ports) != len(defaultPorts) {
-		return true
+		return false
 	}
 	for i, v := range ports {
 		if v != defaultPorts[i] {
-			return true
+			return false
 		}
 	}
-	return false
+	return true
 }
 
 // DomainRegex returns the Regexp object for the domain name identified by the parameter.

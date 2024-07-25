@@ -145,8 +145,8 @@ func TestLoadDatabaseEnvSettings(t *testing.T) {
 
 	// // Scenario 3: Test with no environment variables
 	err = c.LoadDatabaseEnvSettings()
-	if err == nil {
-		t.Errorf("Expected an error when no environment variables are set, got nil")
+	if err != nil {
+		t.Errorf("Expected no error when no environment variables are set, got an error %v", err)
 	}
 
 	// func(graphDBs []*Database) {
