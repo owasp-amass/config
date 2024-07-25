@@ -271,8 +271,9 @@ func (c *Config) LoadSettings(path string) error {
 		return fmt.Errorf("error mapping configuration settings to internal values: %v", err)
 	}
 
-	// Load the settings from the environment
-	c.loadSeedandScopeSettings()
+	if err := c.loadSeedandScopeSettings(); err != nil {
+		return err
+	}
 
 	loads := []func(cfg *Config) error{
 		c.loadAlterationSettings,

@@ -61,7 +61,6 @@ func TestLoadEngineURI_ValidURI(t *testing.T) {
 	err := yaml.Unmarshal(validMockConfigYAML, &c)
 	require.NoError(t, err, "Unmarshalling valid YAML should not produce an error")
 
-	// you should handle the error returned by loadEngineSettings; ignoring it for brevity
 	_ = c.loadEngineSettings(c)
 
 	assert.Equal(t, "http", c.EngineAPI.Scheme, "Scheme should be 'http'")
@@ -128,6 +127,7 @@ func TestLoadEngineEnvSettings_MissingEnvSettings(t *testing.T) {
 	os.Unsetenv(enginePath)
 
 	err := c.LoadEngineEnvSettings()
-	assert.Error(t, err, "LoadEngineEnvSettings should return an error with missing environment settings")
-	assert.Nil(t, c.EngineAPI, "EngineAPI should be nil if environment settings are missing")
+	c.loadEngineURI(c.EngineAPI.URL)
+	assert.Nil(t, err, "LoadEngineEnvSettings shouldn't return an error since default values are in place")
+	assert.NotEmpty(t, c.EngineAPI, "EngineAPI should be properly populated")
 }
