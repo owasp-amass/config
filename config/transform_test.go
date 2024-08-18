@@ -16,14 +16,14 @@ transformations:
   FQDN->IPAddress:
     priority: 1
     confidence: 80
-  FQDN->WHOIS:
+  FQDN->DomainRecord:
     priority: 2
   FQDN->ALL: 
     exclude: [RIRORG,FQDN]
   IPAddress->IPAddress:
     priority: 1
     confidence: 80
-  IPAddress->WHOIS:
+  IPAddress->Netblock:
     priority: 2
   IPAddress->RIRORG:
     # leaving both priority and confidence out
@@ -45,7 +45,7 @@ transformations:
   IPAddress->IPAddress:
     priority: 1
     confidence: 80
-  IPAddress->WHOIS:
+  IPAddress->Netblock:
     priority: 2
   IPAddress->TLS:
     # leaving both priority and confidence out
@@ -66,7 +66,7 @@ transformations:
   IPAddress->IPAddress:
     priority: 1
     confidence: 80
-  IPAddress->WHOIS:
+  IPAddress->Netblock:
     priority: 2
   IPAddress->TLS:
     # leaving both priority and confidence out
@@ -103,7 +103,7 @@ transformations:
   FQDN->IPAddress:
     priority: 1
     confidence: 80
-  Amass->WHOIS:
+  Amass->DomainRecord:
     priority: 2
   FQDN->ALL: 
     exclude: [RIRORG,FQDN]
@@ -127,7 +127,7 @@ func TestLoadTransformSettings(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Unexpected error: %v", err)
 		}
-		if conf.Transformations["FQDN->WHOIS"].Confidence != 50 {
+		if conf.Transformations["FQDN->DomainRecord"].Confidence != 50 {
 			t.Errorf("Expected confidence to be set to global value")
 		}
 	})
@@ -233,9 +233,9 @@ func TestSplit(t *testing.T) {
 func TestIsMatch(t *testing.T) {
 	m := &Matches{
 		to: map[string]struct{}{
-			"ipaddress": {},
-			"whois":     {},
-			"rirorg":    {},
+			"ipaddress":    {},
+			"domainrecord": {},
+			"rirorg":       {},
 		},
 	}
 	m2 := &Matches{}
@@ -290,9 +290,9 @@ func TestCheckTransformations(t *testing.T) {
 			Priority:   1,
 			Confidence: 80,
 		},
-		"FQDN->WHOIS": {
+		"FQDN->DomainRecord": {
 			From:     "fqdn",
-			To:       "whois",
+			To:       "domainrecord",
 			Priority: 2,
 		},
 		"FQDN->ALL": {
@@ -300,8 +300,8 @@ func TestCheckTransformations(t *testing.T) {
 			To:      "all",
 			Exclude: []string{"tls", "fqdn", "rirorg"},
 		},
-		"WHOIS->ALL": {
-			From:    "whois",
+		"DomainRecord->ALL": {
+			From:    "domainrecord",
 			To:      "all",
 			Exclude: []string{"fqdn"},
 		},
@@ -367,7 +367,7 @@ func TestCheckTransformations(t *testing.T) {
 			expected:   &Matches{to: make(map[string]struct{})}},
 		{
 			name:       "No \"to\" matches with config",
-			from:       "whois",
+			from:       "domainrecord",
 			tos:        []string{"fqdn"},
 			expectErr:  true,
 			errMessage: "zero transformation matches in the session config",

@@ -58,14 +58,12 @@ transformations:
   FQDN->IPAddress:
     priority: 1
     confidence: 80
-  FQDN->WHOIS:
+  FQDN->DomainRecord:
     priority: 2
   FQDN->ALL: 
     exclude: [TLS,FQDN]
   IPAddress->FQDN:
     priority: 1
     confidence: 80
-  IPAddress->WHOIS:
-    priority: 2
   IPAddress->Netblock:
     # leaving both priority and confidence out
