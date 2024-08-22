@@ -22,7 +22,8 @@ type Transformation struct {
 type Matches struct {
 	lock sync.Mutex
 	to   map[string]struct {
-		ttl int
+		ttl        int
+		confidence int
 	}
 }
 
@@ -185,7 +186,8 @@ func (c *Config) CheckTransformations(from string, tos ...string) (*Matches, err
 	lower := strings.ToLower(from)
 	tomap := make(map[string]struct{})
 	results := &Matches{to: make(map[string]struct {
-		ttl int
+		ttl        int
+		confidence int
 	})}
 
 	for _, v := range tos {
@@ -204,13 +206,39 @@ func (c *Config) CheckTransformations(from string, tos ...string) (*Matches, err
 				for k := range tomap {
 					if _, ok := results.to[k]; !ok {
 						if _, found := excludes[k]; !found {
-							results.to[k] = struct{ ttl int }{ttl: transform.checkTTL(k, c)}
+							results.to[k] = struct {
+								ttl        int
+								confidence int
+							}{ttl: transform.checkTTL(k, c), confidence: transform.Confidence}
 						}
 					}
 				}
 				continue
 			} else if _, found := tomap[transform.To]; found {
-				results.to[transform.To] = struct{ ttl int }{ttl: transform.checkTTL(transform.To, c)}
+				// this only occurs if an ALL is specified
+				if old, ok := results.to[transform.To]; ok {
+					confidence := transform.Confidence
+					ttl := transform.checkTTL(transform.To, c)
+
+					if confidence == 0 { // if confidence is not set, use the ALL confidence
+						confidence = old.confidence
+					}
+
+					if ttl == 0 { // if ttl is not set, use the ALL ttl
+						ttl = old.ttl
+					}
+
+					results.to[transform.To] = struct {
+						ttl        int
+						confidence int
+					}{ttl: ttl, confidence: confidence}
+
+				} else {
+					results.to[transform.To] = struct {
+						ttl        int
+						confidence int
+					}{ttl: transform.checkTTL(transform.To, c), confidence: transform.Confidence}
+				}
 			}
 		}
 	}

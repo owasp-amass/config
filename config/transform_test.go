@@ -325,7 +325,10 @@ func TestSplit(t *testing.T) {
 
 func TestIsMatch(t *testing.T) {
 	m := &Matches{
-		to: map[string]struct{ ttl int }{
+		to: map[string]struct {
+			ttl        int
+			confidence int
+		}{
 			"ipaddress":    {},
 			"domainrecord": {},
 			"rirorg":       {},
@@ -421,8 +424,13 @@ func TestCheckTransformations(t *testing.T) {
 			tos:       []string{"ipaddress"},
 			expectErr: false,
 			expected: &Matches{
-				to: map[string]struct{ ttl int }{
-					"ipaddress": {},
+				to: map[string]struct {
+					ttl        int
+					confidence int
+				}{
+					"ipaddress": {
+						confidence: 80,
+					},
 				},
 			},
 		},
@@ -432,14 +440,20 @@ func TestCheckTransformations(t *testing.T) {
 			tos:        []string{"rirorg"},
 			expectErr:  true,
 			errMessage: "zero transformation matches in the session config",
-			expected:   &Matches{to: make(map[string]struct{ ttl int })}},
+			expected: &Matches{to: make(map[string]struct {
+				ttl        int
+				confidence int
+			})}},
 		{
 			name:      "Transformation to 'all'",
 			from:      "fqdn",
 			tos:       []string{"registrant", "rirorg"},
 			expectErr: false,
 			expected: &Matches{
-				to: map[string]struct{ ttl int }{
+				to: map[string]struct {
+					ttl        int
+					confidence int
+				}{
 					"registrant": {},
 				},
 			},
@@ -450,28 +464,40 @@ func TestCheckTransformations(t *testing.T) {
 			tos:        []string{"fqdn", "tls"},
 			expectErr:  true,
 			errMessage: "zero transformation matches in the session config",
-			expected:   &Matches{to: make(map[string]struct{ ttl int })}},
+			expected: &Matches{to: make(map[string]struct {
+				ttl        int
+				confidence int
+			})}},
 		{
 			name:       "No \"from\" matches with config",
 			from:       "ip",
 			tos:        []string{"tls", "rirorg"},
 			expectErr:  true,
 			errMessage: "zero transformation matches in the session config",
-			expected:   &Matches{to: make(map[string]struct{ ttl int })}},
+			expected: &Matches{to: make(map[string]struct {
+				ttl        int
+				confidence int
+			})}},
 		{
 			name:       "No \"to\" matches with config",
 			from:       "domainrecord",
 			tos:        []string{"fqdn"},
 			expectErr:  true,
 			errMessage: "zero transformation matches in the session config",
-			expected:   &Matches{to: make(map[string]struct{ ttl int })}},
+			expected: &Matches{to: make(map[string]struct {
+				ttl        int
+				confidence int
+			})}},
 		{
 			name:       "Nil \"to\" matches with config",
 			from:       "fqdn",
 			tos:        []string{"rirorg"},
 			expectErr:  true,
 			errMessage: "zero transformation matches in the session config",
-			expected:   &Matches{to: make(map[string]struct{ ttl int })}},
+			expected: &Matches{to: make(map[string]struct {
+				ttl        int
+				confidence int
+			})}},
 	}
 
 	var err error
