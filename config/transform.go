@@ -293,3 +293,14 @@ func (m *Matches) TTL(to string) int {
 	}
 	return -1
 }
+
+/*
+Confidence returns the confidence for a given 'To' type in the Matches struct.
+If the 'To' type is not found, the function returns -1.
+*/
+func (m *Matches) Confidence(to string) int {
+	if m.IsMatch(to) {
+		return m.to[strings.ToLower(to)].confidence
+	}
+	return -1
+}
