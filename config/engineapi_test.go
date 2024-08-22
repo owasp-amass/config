@@ -1,3 +1,7 @@
+// Copyright © by Jeff Foley 2017-2024. All rights reserved.
+// Use of this source code is governed by Apache 2 LICENSE that can be found in the LICENSE file.
+// SPDX-License-Identifier: Apache-2.0
+
 package config
 
 import (
@@ -127,7 +131,7 @@ func TestLoadEngineEnvSettings_MissingEnvSettings(t *testing.T) {
 	os.Unsetenv(enginePath)
 
 	err := c.LoadEngineEnvSettings()
-	c.loadEngineURI(c.EngineAPI.URL)
+	_ = c.loadEngineURI(c.EngineAPI.URL)
 	assert.Nil(t, err, "LoadEngineEnvSettings shouldn't return an error since default values are in place")
 	assert.NotEmpty(t, c.EngineAPI, "EngineAPI should be properly populated")
 }

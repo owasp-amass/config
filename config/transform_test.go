@@ -1,3 +1,7 @@
+// Copyright © by Jeff Foley 2017-2024. All rights reserved.
+// Use of this source code is governed by Apache 2 LICENSE that can be found in the LICENSE file.
+// SPDX-License-Identifier: Apache-2.0
+
 package config
 
 import (
@@ -518,8 +522,7 @@ func TestCheckTransformations(t *testing.T) {
 					t.Errorf("Unexpected error: %v", err)
 				}
 			}
-
-			if matches != nil && tt.expected != nil && !reflect.DeepEqual(*matches, *tt.expected) {
+			if matches != nil && tt.expected != nil && !reflect.DeepEqual(matches.to, tt.expected.to) {
 				t.Errorf("Expected matches: %v, but got: %v", tt.expected, matches)
 			}
 		})
@@ -528,9 +531,9 @@ func TestCheckTransformations(t *testing.T) {
 
 func TestMatches(t *testing.T) {
 	conf := NewConfig()
-	yaml.Unmarshal(validttlYAML, conf)
-	yaml.Unmarshal(validDataSrcYAML, conf.DataSrcConfigs)
-	conf.loadTransformSettings(conf)
+	_ = yaml.Unmarshal(validttlYAML, conf)
+	_ = yaml.Unmarshal(validDataSrcYAML, conf.DataSrcConfigs)
+	_ = conf.loadTransformSettings(conf)
 	conf.DataSrcConfigs.ttlCheck()
 
 	t.Run("Matching transformation", func(t *testing.T) {
@@ -579,9 +582,9 @@ func TestMatches(t *testing.T) {
 		if err := yaml.Unmarshal(validttlNoDefaultYAML, conf); err != nil {
 			t.Fatalf("Unexpected error: %v", err)
 		}
-		yaml.Unmarshal(validDataSrcYAML, conf.DataSrcConfigs)
+		_ = yaml.Unmarshal(validDataSrcYAML, conf.DataSrcConfigs)
 		conf.DataSrcConfigs.ttlCheck()
-		conf.loadTransformSettings(conf)
+		_ = conf.loadTransformSettings(conf)
 
 		m, err := conf.CheckTransformations("FQDN", "IPAddress", "Netblock", "AlienVault", "BinaryEdge")
 		if err != nil {

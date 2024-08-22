@@ -1,4 +1,4 @@
-// Copyright © by Jeff Foley 2017-2023. All rights reserved.
+// Copyright © by Jeff Foley 2017-2024. All rights reserved.
 // Use of this source code is governed by Apache 2 LICENSE that can be found in the LICENSE file.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -148,10 +148,4 @@ func TestLoadDatabaseEnvSettings(t *testing.T) {
 	if err != nil {
 		t.Errorf("Expected no error when no environment variables are set, got an error %v", err)
 	}
-
-	// func(graphDBs []*Database) {
-	// 	for _, db := range graphDBs {
-	// 		fmt.Println(db)
-	// 	}
-	// }(c.GraphDBs)
 }

@@ -1,4 +1,4 @@
-// Copyright © by Jeff Foley 2017-2023. All rights reserved.
+// Copyright © by Jeff Foley 2017-2024. All rights reserved.
 // Use of this source code is governed by Apache 2 LICENSE that can be found in the LICENSE file.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -39,7 +39,7 @@ func (c *Config) loadDatabaseSettings(cfg *Config) error {
 
 	dbURIInterface, ok := c.Options["database"]
 	if !ok {
-		c.LoadDatabaseEnvSettings()
+		_ = c.LoadDatabaseEnvSettings()
 		return nil
 	}
 
@@ -101,17 +101,14 @@ func (c *Config) loadDatabase(dbURI string) error {
 	if err != nil {
 		return err
 	}
-
 	// Check for valid scheme (database type)
 	if u.Scheme == "" {
 		return fmt.Errorf("missing scheme in database URI")
 	}
-
 	// Check for non-empty username
 	if u.User == nil || u.User.Username() == "" {
 		return fmt.Errorf("missing username in database URI")
 	}
-
 	// Check for reachable hostname
 	if u.Hostname() == "" {
 		return fmt.Errorf("missing hostname in database URI")

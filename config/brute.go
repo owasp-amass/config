@@ -1,4 +1,4 @@
-// Copyright © by Jeff Foley 2017-2023. All rights reserved.
+// Copyright © by Jeff Foley 2017-2024. All rights reserved.
 // Use of this source code is governed by Apache 2 LICENSE that can be found in the LICENSE file.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -27,7 +27,6 @@ func (c *Config) loadBruteForceSettings(cfg *Config) error {
 	}
 
 	c.BruteForcing = enabled
-
 	if !c.BruteForcing {
 		return nil
 	}
@@ -79,7 +78,6 @@ func (c *Config) loadAlterationSettings(cfg *Config) error {
 	}
 
 	c.Alterations = enabled
-
 	if !c.Alterations {
 		return nil
 	}

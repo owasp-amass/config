@@ -1,4 +1,4 @@
-// Copyright © by Jeff Foley 2017-2023. All rights reserved.
+// Copyright © by Jeff Foley 2017-2024. All rights reserved.
 // Use of this source code is governed by Apache 2 LICENSE that can be found in the LICENSE file.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -96,19 +96,16 @@ func (c *Config) loadDataSourceSettings(cfg *Config) error {
 	if !ok {
 		return fmt.Errorf("datasources option is not a string")
 	}
-
 	// Construct the absolute path by joining the current working directory and the relative path
 	absPath, err := c.AbsPathFromConfigDir(path)
 	if err != nil {
 		return fmt.Errorf("failed to get absolute path: %v", err)
 	}
-
 	// Load the datasources YAML file
 	data, err := os.ReadFile(absPath)
 	if err != nil {
 		return fmt.Errorf("error reading datasources file: %v", err)
 	}
-
 	// Unmarshal the YAML data into a DataSourceConfig
 	var dsConfig DataSourceConfig
 	err = yaml.Unmarshal(data, &dsConfig)
@@ -117,12 +114,9 @@ func (c *Config) loadDataSourceSettings(cfg *Config) error {
 	}
 
 	dsConfig.MapNames()
-
 	// Assign the unmarshalled DataSourceConfig to the Config struct
 	c.DataSrcConfigs = &dsConfig
-
 	c.DataSrcConfigs.ttlCheck()
-
 	return nil
 }
 

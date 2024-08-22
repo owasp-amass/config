@@ -1,4 +1,4 @@
-// Copyright © by Jeff Foley 2017-2023. All rights reserved.
+// Copyright © by Jeff Foley 2017-2024. All rights reserved.
 // Use of this source code is governed by Apache 2 LICENSE that can be found in the LICENSE file.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -258,8 +258,8 @@ func (c *Config) LoadSettings(path string) error {
 	// Determine and store the absolute path of the config file
 	absolutePath, err := filepath.Abs(path)
 	if err != nil {
-		c.LoadDatabaseEnvSettings()
-		c.LoadEngineEnvSettings()
+		_ = c.LoadDatabaseEnvSettings()
+		_ = c.LoadEngineEnvSettings()
 		return fmt.Errorf("failed to get absolute path of the configuration file: %v", err)
 	}
 	c.Filepath = absolutePath
@@ -267,15 +267,15 @@ func (c *Config) LoadSettings(path string) error {
 	// Open the configuration file
 	data, err := os.ReadFile(c.Filepath)
 	if err != nil {
-		c.LoadDatabaseEnvSettings()
-		c.LoadEngineEnvSettings()
+		_ = c.LoadDatabaseEnvSettings()
+		_ = c.LoadEngineEnvSettings()
 		return fmt.Errorf("failed to load the main configuration file: %v", err)
 	}
 
 	err = yaml.Unmarshal(data, c)
 	if err != nil {
-		c.LoadDatabaseEnvSettings()
-		c.LoadEngineEnvSettings()
+		_ = c.LoadDatabaseEnvSettings()
+		_ = c.LoadEngineEnvSettings()
 		return fmt.Errorf("error mapping configuration settings to internal values: %v", err)
 	}
 
@@ -313,21 +313,16 @@ func (c *Config) AbsPathFromConfigDir(path string) (string, error) {
 
 		return path, nil
 	}
-
 	// Get the directory of the current config file
 	cfgDir := filepath.Dir(c.Filepath)
-
 	// Clean the incoming path to ensure it doesn't have any problematic elements
 	cleanPath := filepath.Clean(path)
-
 	// Construct the absolute path by joining the config directory and the relative path
 	absPath := filepath.Join(cfgDir, cleanPath)
-
 	// Check if the file exists
 	if _, err := os.Stat(absPath); os.IsNotExist(err) {
 		return "", fmt.Errorf("file does not exist: %v", err)
 	}
-
 	return absPath, nil
 }
 func (s *Scope) toCIDRs(strings []string) []*net.IPNet {
