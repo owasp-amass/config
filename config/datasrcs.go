@@ -121,15 +121,23 @@ func (c *Config) loadDataSourceSettings(cfg *Config) error {
 	// Assign the unmarshalled DataSourceConfig to the Config struct
 	c.DataSrcConfigs = &dsConfig
 
-	// The global minimum TTL is already loaded during the YAML unmarshalling process
-	for _, ds := range dsConfig.Datasources {
-		// Ensure the TTL is not less than the global minimum
-		if dsConfig.GlobalOptions["minimum_ttl"] > ds.TTL {
-			ds.TTL = dsConfig.GlobalOptions["minimum_ttl"]
-		}
-	}
+	c.DataSrcConfigs.ttlCheck()
 
 	return nil
+}
+
+func (dsc *DataSourceConfig) ttlCheck() {
+	// The global minimum TTL is already loaded during the YAML unmarshalling process
+	for _, ds := range dsc.Datasources {
+		// Ensure the TTL is not less than the global minimum
+		if dsc.GlobalOptions != nil {
+			if minTTL, ok := dsc.GlobalOptions["minimum_ttl"]; ok && minTTL > ds.TTL {
+				ds.TTL = dsc.GlobalOptions["minimum_ttl"]
+			}
+		} else {
+			break
+		}
+	}
 }
 
 // MapNames assigns the name of the DataSource to each associated Credential's Name field.

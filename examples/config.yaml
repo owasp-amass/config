@@ -52,7 +52,10 @@ options:
     wordlists: # wordlist(s) to use that are specific to alterations
       - "./wordlists/subdomains-top1mil-110000.txt"
   engine: "https://username:password@localhost:443/graphql?testing=works" # the URI to the engine
-  confidence: 50 # default confidence level for all transformations unless otherwise specified
+  default_transform_values: # default, global values for transformations, if not specified in the transformation.
+    ttl: 1440 # default is 1440
+    confidence: 50 # default is 50
+    priority: 5 # default global priority is 5 (assuming its 1-10)
 
 transformations:
   FQDN->IPAddress:
@@ -61,6 +64,7 @@ transformations:
   FQDN->DomainRecord:
     priority: 2
   FQDN->ALL: 
+    ttl: 1440 # although the default is 1440, this is an example of how to override the default
     exclude: [TLS,FQDN]
   IPAddress->FQDN:
     priority: 1

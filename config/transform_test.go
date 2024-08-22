@@ -109,6 +109,99 @@ transformations:
     exclude: [RIRORG,FQDN]
 `)
 
+// this data source info is here to test accuracy of considering data source ttl in the transformation
+var validDataSrcYAML = []byte(`
+datasources:
+  - name: AlienVault
+    ttl: 4320
+    creds:
+      account1:
+        username: avuser
+        password: avpass
+  - name: BinaryEdge
+    creds:
+      account2:
+        username: beuser
+        password: bepass
+global_options:
+  minimum_ttl: 1300
+`)
+
+var validttlYAML = []byte(`
+options:
+  confidence: 50 # default confidence level for all transformations unless otherwise specified
+  default_transform_values:
+    ttl: 69 # default is 1440
+    confidence: 50 # default is 50
+    priority: 5 # default global priority is 5 (assuming its 1-10)
+
+transformations:
+  FQDN->IPAddress:
+    priority: 1
+    confidence: 80
+    ttl: 770
+  FQDN->DomainRecord:
+    priority: 2
+  FQDN->ALL: 
+    exclude: [TLS,FQDN]
+  IPAddress->FQDN:
+    priority: 1
+    confidence: 80
+  IPAddress->DomainRecord:
+    priority: 2
+  IPAddress->Netblock:
+    # leaving both priority and confidence out
+`)
+
+/*
+this blob Makes sure that the default is set as 1440 and that the FQDN->IPAddress has a ttl of 770 even if
+Even if the FQDN->ALL has a ttl of 1000
+*/
+var validttlNoDefaultYAML = []byte(`
+transformations:
+  FQDN->IPAddress:
+    priority: 1
+    ttl: 770
+  FQDN->DomainRecord:
+    priority: 2
+  FQDN->Netblock:
+    ttl: 1440
+  FQDN->ALL:
+    ttl: 1000
+    exclude: [TLS,FQDN]
+  IPAddress->FQDN:
+    priority: 1
+  IPAddress->DomainRecord:
+    priority: 2
+    confidence: 80
+  IPAddress->Netblock:
+    # leaving both priority and confidence out
+`)
+
+var nonvalidttlYAML = []byte(`
+options:
+  default_transform_values:
+    ttl: hello # default is 1440
+    confidence: 50 # default is 50
+    priority: 5 # default global priority is 5 (assuming its 1-10)
+`)
+
+var nonvalidttlYAML2 = []byte(`
+options:
+  default_transform_values:
+    ttl: 1440 # default is 1440
+    confidence: 50 # default is 50
+    priority: hello # default global priority is 5 (assuming its 1-10)
+`)
+
+var nonvalidttlYAML3 = []byte(`
+options:
+  default_transform_values:
+    ttl: 1440 # default is 1440
+    confidence: hello # default is 50
+    priority: 5 # default global priority is 5 (assuming its 1-10)
+`)
+
 // Utility function to unmarshal YAML and load transformation settings
 func prepareConfig(yamlInput []byte) (*Config, error) {
 	conf := NewConfig()
@@ -232,7 +325,7 @@ func TestSplit(t *testing.T) {
 
 func TestIsMatch(t *testing.T) {
 	m := &Matches{
-		to: map[string]struct{}{
+		to: map[string]struct{ ttl int }{
 			"ipaddress":    {},
 			"domainrecord": {},
 			"rirorg":       {},
@@ -328,7 +421,7 @@ func TestCheckTransformations(t *testing.T) {
 			tos:       []string{"ipaddress"},
 			expectErr: false,
 			expected: &Matches{
-				to: map[string]struct{}{
+				to: map[string]struct{ ttl int }{
 					"ipaddress": {},
 				},
 			},
@@ -339,14 +432,14 @@ func TestCheckTransformations(t *testing.T) {
 			tos:        []string{"rirorg"},
 			expectErr:  true,
 			errMessage: "zero transformation matches in the session config",
-			expected:   &Matches{to: make(map[string]struct{})}},
+			expected:   &Matches{to: make(map[string]struct{ ttl int })}},
 		{
 			name:      "Transformation to 'all'",
 			from:      "fqdn",
 			tos:       []string{"registrant", "rirorg"},
 			expectErr: false,
 			expected: &Matches{
-				to: map[string]struct{}{
+				to: map[string]struct{ ttl int }{
 					"registrant": {},
 				},
 			},
@@ -357,28 +450,28 @@ func TestCheckTransformations(t *testing.T) {
 			tos:        []string{"fqdn", "tls"},
 			expectErr:  true,
 			errMessage: "zero transformation matches in the session config",
-			expected:   &Matches{to: make(map[string]struct{})}},
+			expected:   &Matches{to: make(map[string]struct{ ttl int })}},
 		{
 			name:       "No \"from\" matches with config",
 			from:       "ip",
 			tos:        []string{"tls", "rirorg"},
 			expectErr:  true,
 			errMessage: "zero transformation matches in the session config",
-			expected:   &Matches{to: make(map[string]struct{})}},
+			expected:   &Matches{to: make(map[string]struct{ ttl int })}},
 		{
 			name:       "No \"to\" matches with config",
 			from:       "domainrecord",
 			tos:        []string{"fqdn"},
 			expectErr:  true,
 			errMessage: "zero transformation matches in the session config",
-			expected:   &Matches{to: make(map[string]struct{})}},
+			expected:   &Matches{to: make(map[string]struct{ ttl int })}},
 		{
 			name:       "Nil \"to\" matches with config",
 			from:       "fqdn",
 			tos:        []string{"rirorg"},
 			expectErr:  true,
 			errMessage: "zero transformation matches in the session config",
-			expected:   &Matches{to: make(map[string]struct{})}},
+			expected:   &Matches{to: make(map[string]struct{ ttl int })}},
 	}
 
 	var err error
@@ -405,4 +498,91 @@ func TestCheckTransformations(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestMatches(t *testing.T) {
+	conf := NewConfig()
+	yaml.Unmarshal(validttlYAML, conf)
+	yaml.Unmarshal(validDataSrcYAML, conf.DataSrcConfigs)
+	conf.loadTransformSettings(conf)
+	conf.DataSrcConfigs.ttlCheck()
+
+	t.Run("Matching transformation", func(t *testing.T) {
+		m, err := conf.CheckTransformations("FQDN", "IPAddress", "Netblock", "AlienVault", "BinaryEdge")
+		if err != nil {
+			t.Fatalf("Unexpected error: %v", err)
+		}
+		if m.Len() != 4 {
+			t.Fatalf("Expected 4 mathces, got %d", m.Len())
+		}
+		if m.TTL("IPAddress") != 770 {
+			t.Errorf("Expected TTL of 770, got %d", m.TTL("IPAddress"))
+		}
+		if m.TTL("AlienVault") != 4320 {
+			t.Errorf("Expected TTL of 4320, got %d", m.TTL("BinaryEdge"))
+		}
+		if m.TTL("BinaryEdge") != 1300 {
+			t.Errorf("Expected TTL of 1300, got %d", m.TTL("BinaryEdge"))
+		}
+		if m.TTL("Netblock") != 69 {
+			t.Errorf("Expected TTL of 69, got %d", m.TTL("Netblock"))
+		}
+
+		m, err = conf.CheckTransformations("IPAddress", "IPAddress", "Netblock")
+		if err != nil {
+			t.Fatalf("Unexpected error: %v", err)
+		}
+		if m.TTL("Netblock") != 69 {
+			t.Errorf("Expected TTL of 69, got %d", m.TTL("Netblock"))
+		}
+	})
+
+	t.Run("No matching transformation", func(t *testing.T) {
+		m, err := conf.CheckTransformations("IPAddress", "RIRORG")
+		if err == nil {
+			t.Fatalf("Expected error, got nil")
+		}
+		if m != nil {
+			t.Fatalf("Expected 0 matches, got %d", m.Len())
+		}
+	})
+
+	t.Run("Matching transformation - no default TTL", func(t *testing.T) {
+
+		conf = NewConfig()
+		if err := yaml.Unmarshal(validttlNoDefaultYAML, conf); err != nil {
+			t.Fatalf("Unexpected error: %v", err)
+		}
+		yaml.Unmarshal(validDataSrcYAML, conf.DataSrcConfigs)
+		conf.DataSrcConfigs.ttlCheck()
+		conf.loadTransformSettings(conf)
+
+		m, err := conf.CheckTransformations("FQDN", "IPAddress", "Netblock", "AlienVault", "BinaryEdge")
+		if err != nil {
+			t.Fatalf("Unexpected error: %v", err)
+		}
+
+		if m.Len() != 4 {
+			t.Fatalf("Expected 4 mathces, got %d", m.Len())
+		}
+
+		if m.TTL("Netblock") != 1440 {
+			t.Errorf("Expected TTL of 1440, got %d", m.TTL("Netblock"))
+		}
+	})
+
+	t.Run("Invalid default TTL", func(t *testing.T) {
+		nonvalid := [][]byte{nonvalidttlYAML, nonvalidttlYAML2, nonvalidttlYAML3}
+		for _, y := range nonvalid {
+			conf = NewConfig()
+			if err := yaml.Unmarshal(y, conf); err != nil {
+				t.Fatalf("Unexpected error: %v", err)
+			}
+			err := conf.loadTransformSettings(conf)
+			if err == nil {
+				t.Fatalf("Expected error, got nil when using " + string(y))
+			}
+		}
+	})
+
 }

@@ -55,6 +55,7 @@ func (c *Config) loadDatabaseSettings(cfg *Config) error {
 	return nil
 }
 
+// LoadDatabaseEnvSettings initializes the DB structure with the Environment variables.
 func (c *Config) LoadDatabaseEnvSettings() error {
 	dbURI := ""
 	db := &Database{

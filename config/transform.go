@@ -15,12 +15,15 @@ type Transformation struct {
 	Priority   int      `yaml:"priority,omitempty" json:"priority,omitempty"`
 	Confidence int      `yaml:"confidence,omitempty" json:"confidence,omitempty"`
 	Exclude    []string `yaml:"exclude,omitempty" json:"exclude,omitempty"`
+	TTL        int      `yaml:"ttl,omitempty" json:"ttl,omitempty"`
 }
 
 // Matches represents a collection of transform matches.
 type Matches struct {
 	lock sync.Mutex
-	to   map[string]struct{}
+	to   map[string]struct {
+		ttl int
+	}
 }
 
 /*
@@ -30,10 +33,9 @@ Each key is parsed into 'From' and 'To' segments, representing the origin and ta
 of the transformation, respectively, which are then stored in the corresponding Transformation struct.
 */
 func (c *Config) loadTransformSettings(cfg *Config) error {
-	// Retrieve the global confidence from the Options, if it's set.
-	var globalConfidence int
-	if gc, ok := c.Options["confidence"]; ok {
-		globalConfidence, _ = gc.(int) // Assume it's an int; ignore the error otherwise.
+	// Retrieve the global options from the Options, if it's set.
+	if err := c.loadGlobalTransformSettings(); err != nil {
+		return err
 	}
 
 	// Iterate through each transformation rule defined in the configuration.
@@ -52,7 +54,11 @@ func (c *Config) loadTransformSettings(cfg *Config) error {
 
 		// Apply the global confidence if no specific confidence is set for this transformation.
 		if transformation.Confidence == 0 {
-			transformation.Confidence = globalConfidence
+			transformation.Confidence = c.DefaultTransformations.Confidence
+		}
+
+		if transformation.TTL == 0 {
+			transformation.TTL = c.DefaultTransformations.TTL
 		}
 
 		err := transformation.Validate(c)
@@ -62,6 +68,38 @@ func (c *Config) loadTransformSettings(cfg *Config) error {
 	}
 
 	// If the loop completes with no conflicts, the function returns nil, indicating success.
+	return nil
+}
+
+func (c *Config) loadGlobalTransformSettings() error {
+	// get the default_transfom_values in the config yaml
+	if dtv, ok := c.Options["default_transform_values"]; ok {
+		// Assert the type to map[interface{}]interface{}
+		dtvMap, ok := dtv.(map[string]interface{})
+		if !ok {
+			return fmt.Errorf("invalid type for default_transform_values")
+		}
+
+		// Convert the map to the Transformation struct
+		if ttl, ok := dtvMap["ttl"].(int); ok {
+			c.DefaultTransformations.TTL = ttl
+		} else if !ok && dtvMap["ttl"] != nil {
+			return fmt.Errorf("invalid type for ttl in default_transform_values")
+		}
+
+		if confidence, ok := dtvMap["confidence"].(int); ok {
+			c.DefaultTransformations.Confidence = confidence
+		} else if !ok && dtvMap["confidence"] != nil {
+			return fmt.Errorf("invalid type for confidence in default_transform_values")
+		}
+
+		if priority, ok := dtvMap["priority"].(int); ok {
+			c.DefaultTransformations.Priority = priority
+		} else if !ok && dtvMap["priority"] != nil {
+			return fmt.Errorf("invalid type for priority in default_transform_values")
+		}
+
+	}
 	return nil
 }
 
@@ -146,7 +184,9 @@ func (t *Transformation) Validate(c *Config) error {
 func (c *Config) CheckTransformations(from string, tos ...string) (*Matches, error) {
 	lower := strings.ToLower(from)
 	tomap := make(map[string]struct{})
-	results := &Matches{to: make(map[string]struct{})}
+	results := &Matches{to: make(map[string]struct {
+		ttl int
+	})}
 
 	for _, v := range tos {
 		t := strings.ToLower(v)
@@ -162,13 +202,15 @@ func (c *Config) CheckTransformations(from string, tos ...string) (*Matches, err
 				}
 
 				for k := range tomap {
-					if _, found := excludes[k]; !found {
-						results.to[k] = struct{}{}
+					if _, ok := results.to[k]; !ok {
+						if _, found := excludes[k]; !found {
+							results.to[k] = struct{ ttl int }{ttl: transform.checkTTL(k, c)}
+						}
 					}
 				}
 				continue
 			} else if _, found := tomap[transform.To]; found {
-				results.to[transform.To] = struct{}{}
+				results.to[transform.To] = struct{ ttl int }{ttl: transform.checkTTL(transform.To, c)}
 			}
 		}
 	}
@@ -177,6 +219,23 @@ func (c *Config) CheckTransformations(from string, tos ...string) (*Matches, err
 		return nil, fmt.Errorf("zero transformation matches in the session config")
 	}
 	return results, nil
+}
+
+/*
+checkTTl checks the TTL value for the given 'To' type in the given Config.
+if the 'To' is a data source, it will return the TTL value from the data source config.
+otherwise, it will return the default TTL value from the transformation config.
+*/
+func (t *Transformation) checkTTL(to string, c *Config) int {
+	if c != nil {
+		if c.DataSrcConfigs != nil {
+			ds := c.GetDataSourceConfig(to)
+			if ds != nil && ds.TTL > 0 {
+				return ds.TTL
+			}
+		}
+	}
+	return t.TTL
 }
 
 // IsMatch checks if a valid transformation to the given 'To' type is present.
@@ -193,9 +252,16 @@ func (m *Matches) Len() int {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
-	var num int
-	for range m.to {
-		num++
+	return len(m.to)
+}
+
+/*
+TTL returns the ttl for a given 'To' type in the Matches struct.
+If the 'To' type is not found, the function returns -1.
+*/
+func (m *Matches) TTL(to string) int {
+	if m.IsMatch(to) {
+		return m.to[strings.ToLower(to)].ttl
 	}
-	return num
+	return -1
 }

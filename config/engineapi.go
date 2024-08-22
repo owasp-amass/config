@@ -64,6 +64,7 @@ func (c *Config) loadEngineSettings(cfg *Config) error {
 	return nil
 }
 
+// LoadEngineEnvSettings initializes the EngAPI structure with the Environment variables.
 func (c *Config) LoadEngineEnvSettings() error {
 
 	apiURI := ""

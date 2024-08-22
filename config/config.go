@@ -66,6 +66,9 @@ type Config struct {
 	// Defines options like datasources config path and stuff like that
 	Options map[string]interface{} `yaml:"options,omitempty" json:"-"`
 
+	// The global transformation settings
+	DefaultTransformations *Transformation `yaml:"-" json:"-"`
+
 	// Filepath of the configuration file. It is needed as a seed incase of relative paths in the config.
 	Filepath string `yaml:"-" json:"-"`
 
@@ -212,6 +215,11 @@ func NewConfig() *Config {
 			GlobalOptions: make(map[string]int),
 		},
 		Transformations: make(map[string]*Transformation),
+		DefaultTransformations: &Transformation{
+			TTL:        1440,
+			Confidence: 50,
+			Priority:   5,
+		},
 	}
 }
 
@@ -427,6 +435,7 @@ func getWordList(reader io.Reader) ([]string, error) {
 	return stringset.Deduplicate(words), nil
 }
 
+// JSON returns the JSON encoding of the configuration without escaping HTML characters.
 func (c *Config) JSON() ([]byte, error) {
 	type Alias Config
 	buffer := &bytes.Buffer{}
