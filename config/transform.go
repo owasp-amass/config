@@ -31,37 +31,30 @@ type Matches struct {
 	}
 }
 
-/*
-loadTransformSettings processes the Transformations map from the configuration,
-assigning structured data to each Transformation based on its key.
-Each key is parsed into 'From' and 'To' segments, representing the origin and target
-of the transformation, respectively, which are then stored in the corresponding Transformation struct.
-*/
+// loadTransformSettings processes the Transformations map from the configuration,
+// assigning structured data to each Transformation based on its key.
+// Each key is parsed into 'From' and 'To' segments, representing the origin and target
+// of the transformation, respectively, which are then stored in the corresponding Transformation struct.
 func (c *Config) loadTransformSettings(cfg *Config) error {
 	// Retrieve the global options from the Options, if it's set.
 	if err := c.loadGlobalTransformSettings(); err != nil {
 		return err
 	}
-
 	// Iterate through each transformation rule defined in the configuration.
 	for key, transformation := range c.Transformations {
-
 		// Initialize transformation if nil
 		if transformation == nil {
 			transformation = &Transformation{}      // default struct
 			c.Transformations[key] = transformation // assign it back to the map
 		}
-
 		// Spit the key into 'From' and 'To' components.
 		if err := transformation.Split(key); err != nil {
 			return fmt.Errorf("error when splitting the key: %w", err)
 		}
-
 		// Apply the global confidence if no specific confidence is set for this transformation.
 		if transformation.Confidence == 0 {
 			transformation.Confidence = c.DefaultTransformations.Confidence
 		}
-
 		if transformation.TTL == 0 {
 			transformation.TTL = c.DefaultTransformations.TTL
 		}
@@ -71,7 +64,6 @@ func (c *Config) loadTransformSettings(cfg *Config) error {
 			return err
 		}
 	}
-
 	// If the loop completes with no conflicts, the function returns nil, indicating success.
 	return nil
 }
@@ -84,20 +76,17 @@ func (c *Config) loadGlobalTransformSettings() error {
 		if !ok {
 			return fmt.Errorf("invalid type for default_transform_values")
 		}
-
 		// Convert the map to the Transformation struct
 		if ttl, ok := dtvMap["ttl"].(int); ok {
 			c.DefaultTransformations.TTL = ttl
 		} else if !ok && dtvMap["ttl"] != nil {
 			return fmt.Errorf("invalid type for ttl in default_transform_values")
 		}
-
 		if confidence, ok := dtvMap["confidence"].(int); ok {
 			c.DefaultTransformations.Confidence = confidence
 		} else if !ok && dtvMap["confidence"] != nil {
 			return fmt.Errorf("invalid type for confidence in default_transform_values")
 		}
-
 		if priority, ok := dtvMap["priority"].(int); ok {
 			c.DefaultTransformations.Priority = priority
 		} else if !ok && dtvMap["priority"] != nil {
@@ -109,32 +98,28 @@ func (c *Config) loadGlobalTransformSettings() error {
 }
 
 // Split splits the key into 'From' and 'To' components, expecting a "->" delimiter.
-// Requires a non-nil Transformation pointer and a valid key format. Example: FQDN->IPaddress
+// Requires a non-nil Transformation pointer and a valid key format. Example: FQDN->IPaddress.
 func (t *Transformation) Split(key string) error {
 	if t.From != "" && t.To != "" {
 		t.From = strings.ToLower(t.From)
 		t.To = strings.ToLower(t.To)
 		return nil // Already split
 	}
-
 	// Split the key into 'From' and 'To' components, expecting a "->" delimiter.
 	parts := strings.Split(key, "->")
 	if len(parts) != 2 {
 		return fmt.Errorf("invalid key delimiter: %s", key)
 	}
-
 	// Assign the 'From' and 'To' values to the Transformation struct.
 	t.From = strings.ToLower(parts[0])
 	t.To = strings.ToLower(parts[1])
 	return nil
 }
 
-/*
-Validate checks the validity of a given transformation with respect to OAM &
-previously registered transformations. The function ensures OAM compliance & that there are no conflicts
-between transformations with 'none' (indicating no action) and other valid transformations
-for the same 'From' type.
-*/
+// Validate checks the validity of a given transformation with respect to OAM &
+// previously registered transformations. The function ensures OAM compliance & that there are no conflicts
+// between transformations with 'none' (indicating no action) and other valid transformations
+// for the same 'From' type.
 func (t *Transformation) Validate(c *Config) error {
 	if c.fromWithNone == nil {
 		c.fromWithNone = make(map[string]bool)
@@ -162,10 +147,6 @@ func (t *Transformation) Validate(c *Config) error {
 	if !ffound {
 		return fmt.Errorf("invalid 'From' type: %s does not comply with OAM", t.From)
 	}
-	if !tfound {
-		return fmt.Errorf("invalid 'To' type: %s does not comply with OAM", t.To)
-	}
-
 	// Check for a 'none' transformation, which indicates that no further processing is required for this 'From' type.
 	if t.To == "none" {
 		// Conflict arises if there's already a valid transformation for this 'From'.
@@ -253,11 +234,9 @@ func (c *Config) CheckTransformations(from string, tos ...string) (*Matches, err
 	return results, nil
 }
 
-/*
-checkTTl checks the TTL value for the given 'To' type in the given Config.
-if the 'To' is a data source, it will return the TTL value from the data source config.
-otherwise, it will return the default TTL value from the transformation config.
-*/
+// checkTTl checks the TTL value for the given 'To' type in the given Config.
+// if the 'To' is a data source, it will return the TTL value from the data source config.
+// otherwise, it will return the default TTL value from the transformation config.
 func (t *Transformation) checkTTL(to string, c *Config) int {
 	if c != nil {
 		if c.DataSrcConfigs != nil {
@@ -287,10 +266,8 @@ func (m *Matches) Len() int {
 	return len(m.to)
 }
 
-/*
-TTL returns the ttl for a given 'To' type in the Matches struct.
-If the 'To' type is not found, the function returns -1.
-*/
+// TTL returns the ttl for a given 'To' type in the Matches struct.
+// If the 'To' type is not found, the function returns -1.
 func (m *Matches) TTL(to string) int {
 	if m.IsMatch(to) {
 		return m.to[strings.ToLower(to)].ttl
@@ -298,10 +275,8 @@ func (m *Matches) TTL(to string) int {
 	return -1
 }
 
-/*
-Confidence returns the confidence for a given 'To' type in the Matches struct.
-If the 'To' type is not found, the function returns -1.
-*/
+// Confidence returns the confidence for a given 'To' type in the Matches struct.
+// If the 'To' type is not found, the function returns -1.
 func (m *Matches) Confidence(to string) int {
 	if m.IsMatch(to) {
 		return m.to[strings.ToLower(to)].confidence

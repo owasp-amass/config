@@ -256,8 +256,8 @@ func TestLoadTransformSettings(t *testing.T) {
 	// Test with non-OAM compliant 'to' transformation
 	t.Run("non-OAM compliant 'to' transformation", func(t *testing.T) {
 		_, err := prepareConfig(nonOAMtoYAML)
-		if err == nil {
-			t.Fatalf("Expected error due to non-OAM compliant 'to' transformation, got nil")
+		if err != nil {
+			t.Fatalf("Unexpected error due to non-OAM compliant 'to' transformation")
 		}
 	})
 
