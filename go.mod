@@ -8,7 +8,7 @@ require (
 	github.com/go-ini/ini v1.67.0
 	github.com/google/uuid v1.6.0
 	github.com/owasp-amass/amass/v4 v4.2.0
-	github.com/owasp-amass/open-asset-model v0.5.1
+	github.com/owasp-amass/open-asset-model v0.6.0
 	github.com/stretchr/testify v1.9.0
 	gopkg.in/yaml.v3 v3.0.1
 )
