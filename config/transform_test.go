@@ -23,13 +23,13 @@ transformations:
   FQDN->DomainRecord:
     priority: 2
   FQDN->ALL: 
-    exclude: [RIRORG,FQDN]
+    exclude: [NetworkEndpoint,FQDN]
   IPAddress->IPAddress:
     priority: 1
     confidence: 80
   IPAddress->Netblock:
     priority: 2
-  IPAddress->RIRORG:
+  IPAddress->SocketAddress:
     # leaving both priority and confidence out
 
 `)
