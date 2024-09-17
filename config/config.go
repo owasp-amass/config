@@ -113,7 +113,7 @@ type Config struct {
 	Passive bool `yaml:"-" json:"-"`
 
 	// Determines if zone transfers will be attempted
-	Active bool `yaml:"-" json:"-"`
+	Active bool `yaml:"active,omitempty" json:"active,omitempty"`
 
 	blacklistLock sync.Mutex `yaml:"-" json:"-"`
 
@@ -291,6 +291,7 @@ func (c *Config) LoadSettings(path string) error {
 		c.loadResolverSettings,
 		c.loadTransformSettings,
 		c.loadEngineSettings,
+		c.loadActiveSettings,
 	}
 	for _, load := range loads {
 		if err := load(c); err != nil {
