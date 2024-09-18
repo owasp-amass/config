@@ -38,7 +38,7 @@ func TestActive(t *testing.T) {
 	t.Run("TestActive returns the expected JSON bytes", func(t *testing.T) {
 		expected := []byte(`{"seed":{},"scope":{"ports":[80,443]},"active":true,"resolvers":null,"datasource_config":{},"transformations":{}}
 `)
-		c.loadActiveSettings(c)
+		_ = c.loadActiveSettings(c)
 		got, err := c.JSON()
 		if err != nil {
 			t.Errorf("Unexpected error: %v", err)
@@ -72,7 +72,7 @@ func TestActive(t *testing.T) {
 		expected := []byte(`{"seed":{},"scope":{"ports":[80,443]},"resolvers":null,"datasource_config":{},"transformations":{}}
 `)
 
-		c.loadActiveSettings(c)
+		_ = c.loadActiveSettings(c)
 		got, err := c.JSON()
 		if err != nil {
 			t.Errorf("Unexpected error: %v", err)
