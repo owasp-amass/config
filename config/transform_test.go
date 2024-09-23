@@ -609,7 +609,7 @@ func TestMatches(t *testing.T) {
 			}
 			err := conf.loadTransformSettings(conf)
 			if err == nil {
-				t.Fatalf("Expected error, got nil when using " + string(y))
+				t.Fatal("Expected error, got nil when using " + string(y))
 			}
 		}
 	})

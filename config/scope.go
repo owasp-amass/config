@@ -214,17 +214,15 @@ func (c *Config) IsAddressInScope(addr string) bool {
 	}
 
 	if len(c.Scope.Addresses) == 0 && len(c.Scope.CIDRs) == 0 {
-		return true
+		return false
 	}
-
-	for _, a := range c.Scope.Addresses {
-		if a.Equal(ip) {
+	for _, cidr := range c.Scope.CIDRs {
+		if cidr.Contains(ip) {
 			return true
 		}
 	}
-
-	for _, cidr := range c.Scope.CIDRs {
-		if cidr.Contains(ip) {
+	for _, a := range c.Scope.Addresses {
+		if a.Equal(ip) {
 			return true
 		}
 	}

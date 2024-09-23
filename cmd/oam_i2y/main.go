@@ -193,7 +193,7 @@ func main() {
 		if err != nil {
 			log.Println("Failed to write datasources file:", err)
 		} else {
-			fmt.Println(b.Sprintf("Wrote data sources file successfully at ") + p.Sprintf(datasrcFile))
+			fmt.Println(b.Sprint("Wrote data sources file successfully at: ") + p.Sprint(datasrcFile))
 		}
 	}
 
