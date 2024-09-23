@@ -39,7 +39,9 @@ func (c *Config) loadDatabaseSettings(cfg *Config) error {
 
 	dbURIInterface, ok := c.Options["database"]
 	if !ok {
-		_ = c.LoadDatabaseEnvSettings()
+		if isAnyDatabaseEnvVarSet() {
+			_ = c.LoadDatabaseEnvSettings()
+		}
 		return nil
 	}
 
@@ -53,6 +55,24 @@ func (c *Config) loadDatabaseSettings(cfg *Config) error {
 	}
 
 	return nil
+}
+
+func isAnyDatabaseEnvVarSet() bool {
+	vars := []string{
+		amassUser,
+		amassPass,
+		assetDB,
+		assetPort,
+		assetDBName,
+	}
+
+	for _, v := range vars {
+		if os.Getenv(v) != "" {
+			return true
+		}
+	}
+
+	return false
 }
 
 // LoadDatabaseEnvSettings initializes the DB structure with the Environment variables.

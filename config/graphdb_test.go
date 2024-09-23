@@ -17,6 +17,9 @@ func TestLoadDatabaseSettings(t *testing.T) {
 	if err != nil {
 		t.Errorf("Got an error when no database is provided, expected nil. Error: %v", err)
 	}
+	if len(c.GraphDBs) != 0 {
+		t.Errorf("Expected GraphDBs to have no elements, got %v", len(c.GraphDBs))
+	}
 
 	// Test with invalid type in database
 	c = NewConfig()
