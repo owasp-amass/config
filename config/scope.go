@@ -79,6 +79,11 @@ func (s *Scope) populate() error {
 	// Convert string CIDRs to net.IP and net.IPNet
 	s.CIDRs = s.toCIDRs(s.CIDRStrings)
 
+	// Convert PortsRaw to Ports
+	if err := s.parsePorts(); err != nil {
+		return err
+	}
+
 	parseIPs := ParseIPs{} // Create a new ParseIPs, which is a []net.IP under the hood
 	// Validate IP ranges in c.Scope.IP
 	for _, ipRange := range s.IP {
@@ -89,6 +94,65 @@ func (s *Scope) populate() error {
 	// append parseIPs (which is a []net.IP) to c.Scope.IP
 	s.Addresses = append(s.Addresses, parseIPs...)
 	return nil
+}
+
+func (s *Scope) parsePorts() error {
+
+	if len(s.PortsRaw) != 0 {
+		s.Ports = []int{}
+	}
+
+	for _, port := range s.PortsRaw {
+		switch p := port.(type) {
+		case int: // If it's an integer, just append
+			s.Ports = append(s.Ports, p)
+		case string: // If it's a string, check if it's a range or a single port
+			if strings.Contains(p, "-") {
+				// Handle port range
+				portRange, err := convertPortRangeToSlice(p)
+				if err != nil {
+					return err
+				}
+				s.Ports = append(s.Ports, portRange...)
+			} else {
+				// Handle single port string
+				portNum, err := strconv.Atoi(p)
+				if err != nil {
+					return fmt.Errorf("invalid port string: %v", err)
+				}
+				s.Ports = append(s.Ports, portNum)
+			}
+		default:
+			return fmt.Errorf("unsupported port type: %T", p)
+		}
+	}
+
+	return nil
+}
+
+func convertPortRangeToSlice(portRange string) ([]int, error) {
+	var ports []int
+
+	parts := strings.Split(portRange, "-")
+	if len(parts) != 2 {
+		return nil, fmt.Errorf("invalid port range format")
+	}
+
+	start, err := strconv.Atoi(parts[0])
+	if err != nil {
+		return nil, fmt.Errorf("invalid start port: %v", err)
+	}
+
+	end, err := strconv.Atoi(parts[1])
+	if err != nil {
+		return nil, fmt.Errorf("invalid end port: %v", err)
+	}
+
+	for i := start; i <= end; i++ {
+		ports = append(ports, i)
+	}
+
+	return ports, nil
 }
 
 // returns true is ports match default ports (80,443), otherwise return false

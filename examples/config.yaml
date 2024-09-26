@@ -32,6 +32,7 @@ scope:
   ports: # ports to be used when actively reaching a service
     - 80
     - 443
+#   - 8080-8088 # this is an example of how to specify a range of ports, ranges are handled in an inclusive manner
   blacklist: # subdomains to be blacklisted
     - example.example1.com
 options:

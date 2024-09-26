@@ -295,6 +295,39 @@ scope:
 			assertionFunc: func(t *testing.T, c *Config) {
 			},
 		},
+		{
+			name: "success - valid ports in section with range in scope.PortsRaw",
+			args: args{cfg: []byte(`
+scope:
+  ports: # ports to be used when actively reaching a service
+    - "80"
+    - 443
+    - 8080-8088`)},
+			wantErr: false,
+			assertionFunc: func(t *testing.T, c *Config) {
+				if len(c.Scope.Ports) != 11 {
+					t.Errorf("failed to load ports")
+				}
+				expected := map[int]struct{}{
+					80:   {},
+					443:  {},
+					8080: {},
+					8081: {},
+					8082: {},
+					8083: {},
+					8084: {},
+					8085: {},
+					8086: {},
+					8087: {},
+					8088: {},
+				}
+				for _, v := range c.Scope.Ports {
+					if _, ok := expected[v]; !ok {
+						t.Errorf("failed to load ports")
+					}
+				}
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

@@ -186,8 +186,11 @@ type Scope struct {
 	// CIDR in scope
 	CIDRStrings []string `yaml:"cidrs,omitempty" json:"-"`
 
+	// Ports as an interface to parse and  for ranges, it is stored as an interface for easy casting
+	PortsRaw []interface{} `yaml:"ports,omitempty" json:"-"`
+
 	// The ports checked for certificates
-	Ports []int `yaml:"ports,omitempty" json:"ports,omitempty"`
+	Ports []int `yaml:"-" json:"ports,omitempty"`
 
 	// A blacklist of subdomain names that will not be investigated
 	Blacklist []string `yaml:"blacklist,omitempty" json:"blacklist,omitempty"`
