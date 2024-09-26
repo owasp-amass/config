@@ -35,6 +35,7 @@ scope:
   blacklist: # subdomains to be blacklisted
     - example.example1.com
 options:
+  rigid_boundaries: true # boolean to determine if rigid boundaries are enabled
   resolvers: 
     - "../examples/resolvers.txt" # array of 1 path or multiple IPs to use as a resolver
     - 76.76.19.19

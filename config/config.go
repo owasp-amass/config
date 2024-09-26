@@ -115,6 +115,9 @@ type Config struct {
 	// Determines if zone transfers will be attempted
 	Active bool `yaml:"active,omitempty" json:"active,omitempty"`
 
+	// Determines rigidness of the enumeration
+	Rigid bool `yaml:"rigid_boundaries" json:"rigid_boundaries"`
+
 	blacklistLock sync.Mutex `yaml:"-" json:"-"`
 
 	// A list of data sources that should not be utilized
@@ -292,6 +295,7 @@ func (c *Config) LoadSettings(path string) error {
 		c.loadTransformSettings,
 		c.loadEngineSettings,
 		c.loadActiveSettings,
+		c.loadRigidSettings,
 	}
 	for _, load := range loads {
 		if err := load(c); err != nil {
